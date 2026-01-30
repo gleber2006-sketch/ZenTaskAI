@@ -372,40 +372,55 @@ const App: React.FC = () => {
         <header className="px-6 md:px-10 py-6 md:py-8 shrink-0">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-1">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white flex items-center gap-3">
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter flex items-center gap-3">
                 ZenTask <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-500 to-emerald-400">AI</span>
                 {isSyncing && <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>}
               </h2>
               <p className="text-slate-600 dark:text-slate-400 font-bold tracking-tight flex items-center gap-2">
-                <span className="opacity-80">{user.email}</span>
-                <span className="w-1.5 h-1.5 bg-slate-300 dark:bg-slate-800 rounded-full"></span>
-                <span className="text-indigo-700 dark:text-indigo-400 font-black uppercase text-[10px] tracking-[0.25em]">{pendingTasks.length} frentes ativas hoje</span>
+                <span>{user.email}</span>
+                <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-slate-700 rounded-full"></span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-black uppercase text-[10px] tracking-[0.25em]">{pendingTasks.length} frentes ativas hoje</span>
               </p>
             </div>
 
             {/* Bento Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="glass-card p-4 rounded-3xl min-w-[140px] transition-premium hover:scale-[1.05] hover:shadow-2xl hover:shadow-indigo-500/10 border-indigo-500/10">
-                <p className="text-[10px] font-black uppercase text-indigo-500 tracking-[0.2em] mb-2">Performance</p>
-                <div className="flex items-end gap-2 text-3xl font-black leading-none tracking-tighter">
-                  {Math.round((completedTasks.length / (tasks.length || 1)) * 100)}%
-                  <span className="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-widest">Done</span>
+              <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-white dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-slate-200/50 dark:shadow-none transition-premium group hover:scale-[1.02]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em]">Performance</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{Math.round((completedTasks.length / (tasks.length || 1)) * 100)}%</span>
+                  <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Done</span>
                 </div>
               </div>
-              <div className="glass-card p-4 rounded-3xl min-w-[140px] transition-premium hover:scale-[1.05] hover:shadow-2xl hover:shadow-emerald-500/10 border-emerald-500/10">
-                <p className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.2em] mb-2">Pendente</p>
-                <div className="flex items-end gap-2 text-3xl font-black leading-none tracking-tighter">
-                  {pendingTasks.length}
-                  <span className="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-widest">Tasks</span>
+
+              <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-white dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-slate-200/50 dark:shadow-none transition-premium group hover:scale-[1.02]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em]">Pendente</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{pendingTasks.length}</span>
+                  <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tasks</span>
                 </div>
               </div>
-              <div className="hidden md:block glass-card p-4 rounded-3xl min-w-[160px] transition-premium hover:scale-[1.05] hover:shadow-2xl hover:shadow-amber-500/10 border-amber-500/10">
-                <p className="text-[10px] font-black uppercase text-amber-500 tracking-[0.2em] mb-2">Forecast</p>
-                <div className="flex items-end gap-1 text-2xl font-black leading-none tracking-tighter text-slate-800 dark:text-slate-100">
-                  R$ {pendingTasks.reduce((acc, t) => {
-                    const val = parseFloat(t.value?.replace(/[^\d,]/g, '').replace(',', '.') || '0');
-                    return acc + val;
-                  }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+
+              <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-indigo-100 dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-indigo-100/50 dark:shadow-none transition-premium group hover:scale-[1.02] relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-2 opacity-10">
+                  <svg className="w-12 h-12 text-indigo-500 rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Forecast</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 text-indigo-600 dark:text-indigo-400">
+                    <span className="text-4xl font-black tracking-tighter">R$ {pendingTasks.reduce((acc, t) => {
+                      const val = parseFloat(t.value?.replace(/[^\d,]/g, '').replace(',', '.') || '0');
+                      return acc + val;
+                    }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -422,39 +437,39 @@ const App: React.FC = () => {
             {/* List Header / Search */}
             <div className="p-8 pb-4 flex flex-col gap-8 shrink-0 z-10">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-2 h-8 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]"></div>
-                  <h3 className="text-xl font-black tracking-tighter text-slate-800 dark:text-white uppercase">Fluxo de Trabalho</h3>
-                </div>
-
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-white/5">
-                  {(['Tudo', 'Pessoal', 'Trabalho', 'Financeiro', 'Projetos'] as const).map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveCategory(cat)}
-                      className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-premium ${activeCategory === cat
-                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-lg border border-gray-200 dark:border-white/10'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-indigo-600 transition-colors'
-                        }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-[0.2em] flex items-center gap-4 uppercase mb-2">
+                  <span className="w-1 h-8 bg-indigo-600 dark:bg-indigo-500 rounded-full"></span>
+                  Fluxo de Trabalho
+                </h3>
               </div>
 
-              <div className="relative group/search">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within/search:text-indigo-500 transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Master Search: Digite qualquer coisa para filtrar seu workspace..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-14 pr-6 py-4.5 bg-slate-100/30 dark:bg-slate-950/20 border border-transparent focus:border-indigo-500/20 rounded-[1.5rem] text-sm font-bold transition-premium placeholder:text-slate-500/60 focus:bg-white dark:focus:bg-slate-900 outline-none backdrop-blur-md shadow-inner text-slate-900 dark:text-white"
-                />
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-white/5">
+                {(['Tudo', 'Pessoal', 'Trabalho', 'Financeiro', 'Projetos'] as const).map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-premium ${activeCategory === cat
+                      ? 'bg-slate-900 dark:bg-slate-800 text-white dark:text-white shadow-xl border border-slate-900 dark:border-white/10'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 font-bold transition-all'
+                      }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
+            </div>
+
+            <div className="relative group/search">
+              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within/search:text-indigo-500 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Master Search: Digite qualquer coisa para filtrar seu workspace..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-14 pr-6 py-4.5 bg-slate-100/30 dark:bg-slate-950/20 border border-transparent focus:border-indigo-500/20 rounded-[1.5rem] text-sm font-bold transition-premium placeholder:text-slate-500/60 focus:bg-white dark:focus:bg-slate-900 outline-none backdrop-blur-md shadow-inner text-slate-900 dark:text-white"
+              />
             </div>
 
             {/* Task Area Scroller */}
@@ -522,9 +537,9 @@ const App: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar scroll-smooth">
                 {history.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-4 duration-500`}>
-                    <div className={`max-w-[90%] px-6 py-5 rounded-[2rem] text-sm leading-relaxed font-semibold ${msg.role === 'user'
+                    <div className={`max-w-[90%] px-6 py-5 rounded-[2rem] text-sm leading-relaxed font-bold ${msg.role === 'user'
                       ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-tr-none shadow-2xl shadow-slate-900/20'
-                      : 'bg-white/60 dark:bg-slate-800/40 text-slate-900 dark:text-slate-100 rounded-tl-none border border-white/60 dark:border-white/5 backdrop-blur-md'
+                      : 'bg-white dark:bg-slate-800/60 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-200 dark:border-white/5 backdrop-blur-md shadow-lg'
                       }`}>
                       {msg.hasFile && (
                         <div className="flex items-center gap-2 mb-4 p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-indigo-500/20">
@@ -600,10 +615,10 @@ const App: React.FC = () => {
             </div>
           </section>
         </div>
-      </main>
+      </main >
 
       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,application/pdf,text/plain" />
-    </div>
+    </div >
   );
 };
 
