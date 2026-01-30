@@ -1,0 +1,5 @@
+{
+  "name": "ZenTask AI",
+  "description": "Um gerenciador de tarefas inteligente que utiliza a API Gemini para processar comandos em linguagem natural e organizar seu dia com facilidade.",
+  "requestFramePermissions": []
+}
