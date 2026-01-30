@@ -314,7 +314,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
           {/* Main Attributes Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <div className="flex flex-col gap-2">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Status do Ciclo</label>
+              <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Status do Ciclo</label>
               {isEditing ? (
                 <select className="text-xs font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none transition-premium h-[3.5rem]" value={editData.status} onChange={(e) => handleChange('status', e.target.value as TaskStatus)}>
                   <option value="Para Fazer">1. Para Fazer</option>
@@ -333,7 +333,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
             {(task.category === 'Trabalho' || !task.category) && (
               <>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Contato / Lead</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Contato / Lead</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none transition-premium h-[3.5rem]" value={editData.contato || editData.client || ""} onChange={(e) => handleChange('contato', e.target.value)} />
                   ) : (
@@ -341,7 +341,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Organização</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Organização</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none transition-premium h-[3.5rem]" value={editData.empresa || ""} onChange={(e) => handleChange('empresa', e.target.value)} />
                   ) : (
@@ -349,7 +349,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Investimento</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Investimento</label>
                   {isEditing ? (
                     <input className="text-xs font-black text-indigo-500 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none transition-premium h-[3.5rem]" value={editData.value || ""} onChange={(e) => handleChange('value', e.target.value)} />
                   ) : (
@@ -362,7 +362,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
             {task.category === 'Pessoal' && (
               <>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">📍 Localização</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">📍 Localização</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.local || ""} onChange={(e) => handleChange('local', e.target.value)} />
                   ) : (
@@ -370,7 +370,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">✨ Vibe / Humor</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">✨ Vibe / Humor</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.humor || ""} onChange={(e) => handleChange('humor', e.target.value)} />
                   ) : (
@@ -378,7 +378,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">👥 Círculo / Pessoas</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">👥 Círculo / Pessoas</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.participantes || ""} onChange={(e) => handleChange('participantes', e.target.value)} />
                   ) : (
@@ -391,7 +391,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
             {task.category === 'Clientes' && (
               <>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">🤝 Briefing / Resumo</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">🤝 Briefing / Resumo</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.briefing || ""} onChange={(e) => handleChange('briefing', e.target.value)} />
                   ) : (
@@ -399,7 +399,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">📂 Link do Canvas</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">📂 Link do Canvas</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.linkArquivos || ""} onChange={(e) => handleChange('linkArquivos', e.target.value)} />
                   ) : (
@@ -412,7 +412,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
             {task.category === 'Financeiro' && (
               <>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">💰 Montante</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">💰 Montante</label>
                   {isEditing ? (
                     <input className="text-xs font-black text-indigo-500 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.value || ""} onChange={(e) => handleChange('value', e.target.value)} />
                   ) : (
@@ -420,7 +420,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">📈 Tipo de Fluxo</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">📈 Tipo de Fluxo</label>
                   {isEditing ? (
                     <select className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.fluxo || "Entrada"} onChange={(e) => handleChange('fluxo', e.target.value)}>
                       <option value="Entrada">Entrada (Receita)</option>
@@ -433,7 +433,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">📌 Natureza</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">📌 Natureza</label>
                   {isEditing ? (
                     <select className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.tipoFinanceiro || "Fixo"} onChange={(e) => handleChange('tipoFinanceiro', e.target.value)}>
                       <option value="Fixo">Fixo Mensal</option>
@@ -449,7 +449,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
             {task.category === 'Estudos' && (
               <>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">📚 Matéria / Curso</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">📚 Matéria / Curso</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.materia || ""} onChange={(e) => handleChange('materia', e.target.value)} />
                   ) : (
@@ -457,7 +457,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">📝 Módulo / Tópico</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">📝 Módulo / Tópico</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.topico || ""} onChange={(e) => handleChange('topico', e.target.value)} />
                   ) : (
@@ -465,7 +465,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">🔗 Acesso Rápido</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">🔗 Acesso Rápido</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.linkAula || ""} onChange={(e) => handleChange('linkAula', e.target.value)} />
                   ) : (
@@ -478,7 +478,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
             {task.category === 'Projetos' && (
               <>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">🚀 Versão / Milestone</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">🚀 Versão / Milestone</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.milestone || ""} onChange={(e) => handleChange('milestone', e.target.value)} />
                   ) : (
@@ -486,7 +486,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">💻 Stack Técnica</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">💻 Stack Técnica</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.stack || ""} onChange={(e) => handleChange('stack', e.target.value)} />
                   ) : (
@@ -494,7 +494,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">📁 Repositório Git</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">📁 Repositório Git</label>
                   {isEditing ? (
                     <input className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.repo || ""} onChange={(e) => handleChange('repo', e.target.value)} />
                   ) : (
@@ -506,7 +506,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
 
             {/* Standard fields for all categories */}
             <div className="flex flex-col gap-2">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">🔥 Prioridade</label>
+              <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">🔥 Prioridade</label>
               {isEditing ? (
                 <select className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.importance || "baixa"} onChange={(e) => handleChange('importance', e.target.value as ImportanceLevel)}>
                   <option value="baixa">Baixa</option>
@@ -520,7 +520,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">📅 Data Limite</label>
+              <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">📅 Data Limite</label>
               {isEditing ? (
                 <input type="date" className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none h-[3.5rem]" value={editData.endDate || ""} onChange={(e) => handleChange('endDate', e.target.value)} />
               ) : (
@@ -548,7 +548,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Status do Fluxo</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Status do Fluxo</label>
                   {isEditing ? (
                     <select
                       className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none transition-premium h-[3.5rem]"
@@ -567,7 +567,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Modalidade</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Modalidade</label>
                   {isEditing ? (
                     <select
                       className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none transition-premium h-[3.5rem]"
@@ -585,7 +585,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Vencimento</label>
+                  <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Vencimento</label>
                   {isEditing ? (
                     <input type="date" className="text-xs font-bold bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-3 focus:border-indigo-500/30 outline-none transition-premium h-[3.5rem]" value={editData.pagamento?.dataPagamento || ""} onChange={(e) => handlePaymentChange('dataPagamento', e.target.value)} />
                   ) : (
@@ -706,7 +706,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
 
           {/* Notes Section */}
           <div className="mt-8 flex flex-col">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Notas & Pensamentos</label>
+            <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-3">Notas & Pensamentos</label>
             {isEditing ? (
               <textarea
                 className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-2xl p-4 focus:border-indigo-500/30 outline-none transition-premium min-h-[100px] resize-none"
@@ -714,7 +714,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
                 onChange={(e) => handleChange('description', e.target.value)}
               />
             ) : (
-              <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-white/50 dark:bg-slate-900/50 p-5 rounded-3xl border border-slate-100 dark:border-white/5 italic">
+              <div className="text-sm text-slate-700 dark:text-slate-400 leading-relaxed bg-white/50 dark:bg-slate-900/50 p-5 rounded-3xl border border-slate-100 dark:border-white/5 italic">
                 {task.description || "Nenhuma nota adicional para este registro."}
               </div>
             )}

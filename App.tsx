@@ -376,10 +376,10 @@ const App: React.FC = () => {
                 ZenTask <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-500 to-emerald-400">AI</span>
                 {isSyncing && <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>}
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 font-bold tracking-tight flex items-center gap-2">
-                <span className="opacity-60">{user.email}</span>
-                <span className="w-1.5 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full"></span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-black uppercase text-[10px] tracking-[0.25em]">{pendingTasks.length} frentes ativas hoje</span>
+              <p className="text-slate-600 dark:text-slate-400 font-bold tracking-tight flex items-center gap-2">
+                <span className="opacity-80">{user.email}</span>
+                <span className="w-1.5 h-1.5 bg-slate-300 dark:bg-slate-800 rounded-full"></span>
+                <span className="text-indigo-700 dark:text-indigo-400 font-black uppercase text-[10px] tracking-[0.25em]">{pendingTasks.length} frentes ativas hoje</span>
               </p>
             </div>
 
@@ -434,7 +434,7 @@ const App: React.FC = () => {
                       onClick={() => setActiveCategory(cat)}
                       className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-premium ${activeCategory === cat
                         ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-lg border border-gray-200 dark:border-white/10'
-                        : 'text-slate-400 hover:text-indigo-500'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-indigo-600 transition-colors'
                         }`}
                     >
                       {cat}
@@ -452,7 +452,7 @@ const App: React.FC = () => {
                   placeholder="Master Search: Digite qualquer coisa para filtrar seu workspace..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-14 pr-6 py-4.5 bg-slate-100/30 dark:bg-slate-950/20 border border-transparent focus:border-indigo-500/20 rounded-[1.5rem] text-sm font-bold transition-premium placeholder:text-slate-400/50 focus:bg-white dark:focus:bg-slate-900 outline-none backdrop-blur-md shadow-inner"
+                  className="w-full pl-14 pr-6 py-4.5 bg-slate-100/30 dark:bg-slate-950/20 border border-transparent focus:border-indigo-500/20 rounded-[1.5rem] text-sm font-bold transition-premium placeholder:text-slate-500/60 focus:bg-white dark:focus:bg-slate-900 outline-none backdrop-blur-md shadow-inner text-slate-900 dark:text-white"
                 />
               </div>
             </div>
@@ -460,12 +460,12 @@ const App: React.FC = () => {
             {/* Task Area Scroller */}
             <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
               {filteredTasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center py-20 opacity-40 animate-in fade-in duration-1000">
-                  <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800/80 rounded-[2.5rem] flex items-center justify-center mb-8 rotate-12">
-                    <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                <div className="flex flex-col items-center justify-center h-full text-center py-20 opacity-60 animate-in fade-in duration-1000">
+                  <div className="w-24 h-24 bg-slate-200/50 dark:bg-slate-800/80 rounded-[2.5rem] flex items-center justify-center mb-8 rotate-12">
+                    <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                   </div>
-                  <h3 className="text-2xl font-black text-slate-400 tracking-tighter uppercase">Zen Space</h3>
-                  <p className="text-sm mt-3 max-w-[220px] font-medium leading-relaxed text-slate-400">Tudo sob controle. Seu workspace está limpo e organizado.</p>
+                  <h3 className="text-2xl font-black text-slate-600 dark:text-slate-300 tracking-tighter uppercase">Zen Space</h3>
+                  <p className="text-sm mt-3 max-w-[220px] font-bold leading-relaxed text-slate-500 dark:text-slate-400">Tudo sob controle. Seu workspace está limpo e organizado.</p>
                 </div>
               ) : (
                 <div className="space-y-10 pt-4">
@@ -522,9 +522,9 @@ const App: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar scroll-smooth">
                 {history.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-4 duration-500`}>
-                    <div className={`max-w-[90%] px-6 py-5 rounded-[2rem] text-sm leading-relaxed font-medium ${msg.role === 'user'
+                    <div className={`max-w-[90%] px-6 py-5 rounded-[2rem] text-sm leading-relaxed font-semibold ${msg.role === 'user'
                       ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-tr-none shadow-2xl shadow-slate-900/20'
-                      : 'bg-white/40 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200 rounded-tl-none border border-white/40 dark:border-white/5 backdrop-blur-md'
+                      : 'bg-white/60 dark:bg-slate-800/40 text-slate-900 dark:text-slate-100 rounded-tl-none border border-white/60 dark:border-white/5 backdrop-blur-md'
                       }`}>
                       {msg.hasFile && (
                         <div className="flex items-center gap-2 mb-4 p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-indigo-500/20">
@@ -581,7 +581,7 @@ const App: React.FC = () => {
                         }
                       }}
                       placeholder="Brainstorm with Zen AI..."
-                      className="w-full pl-8 pr-24 py-6 bg-white dark:bg-slate-900/80 border border-transparent focus:border-indigo-500/20 rounded-[2.5rem] text-sm font-bold transition-premium placeholder:text-slate-400/60 outline-none shadow-2xl shadow-indigo-900/10 resize-none custom-scrollbar min-h-[0px] leading-relaxed block backdrop-blur-md"
+                      className="w-full pl-8 pr-24 py-6 bg-white dark:bg-slate-900/80 border border-transparent focus:border-indigo-500/20 rounded-[2.5rem] text-sm font-bold transition-premium placeholder:text-slate-500/60 outline-none shadow-2xl shadow-indigo-900/10 resize-none custom-scrollbar min-h-[0px] leading-relaxed block backdrop-blur-md text-slate-900 dark:text-white"
                       rows={2}
                       disabled={isLoading}
                     />
