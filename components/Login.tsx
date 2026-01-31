@@ -58,9 +58,11 @@ const Login: React.FC = () => {
                 </div>
 
                 {/* Card */}
-                <div className="glass-card rounded-[3rem] p-10 md:p-12 relative overflow-hidden transition-premium hover:shadow-2xl hover:shadow-indigo-500/10 border-white/40 dark:border-white/5">
-                    <div className="absolute top-0 right-0 -mr-12 -mt-12 w-40 h-40 bg-indigo-500 opacity-10 blur-[80px]"></div>
-                    <div className="absolute bottom-0 left-0 -ml-12 -mb-12 w-40 h-40 bg-violet-500 opacity-10 blur-[80px]"></div>
+                <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 md:p-12 relative overflow-hidden transition-premium shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-white/50 dark:border-slate-800">
+                    {/* Subtle decorative elements matching dashboard */}
+                    <div className="absolute top-0 right-0 p-8 opacity-5">
+                        <svg className="w-32 h-32 text-indigo-600 dark:text-indigo-400 rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </div>
 
                     <div className="relative z-10">
                         <div className="mb-8">

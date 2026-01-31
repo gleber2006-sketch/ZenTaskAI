@@ -181,10 +181,10 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
   const isPaymentModuleActive = task.pagamento?.status !== 'Não aplicável' || !!task.value || !!task.client || !!task.contato || !!task.empresa;
 
   return (
-    <div className={`group mb-4 bg-white/95 dark:bg-slate-900/40 backdrop-blur-xl border rounded-[2rem] transition-all hover:scale-[1.01] hover:shadow-2xl hover:shadow-indigo-500/10 ${isCompleted ? 'border-emerald-200/50 dark:border-emerald-500/20' : 'border-slate-200 dark:border-white/5'}`}>
+    <div className={`group mb-3 bg-white dark:bg-slate-900/40 border rounded-2xl transition-all hover:shadow-md ${isCompleted ? 'border-emerald-100 opacity-60' : 'border-slate-100 dark:border-white/5'}`}>
       {/* Header / Clickable area */}
       <div
-        className="flex items-center justify-between p-5 cursor-pointer"
+        className="flex items-center justify-between p-5 cursor-pointer relative"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center space-x-5 min-w-0">
@@ -193,79 +193,86 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdate 
               e.stopPropagation();
               onToggle(task.id);
             }}
-            className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all ${isCompleted
-              ? 'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-500/20'
-              : 'border-slate-200 dark:border-slate-700 hover:border-indigo-500'
+            className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${isCompleted
+              ? 'bg-emerald-500 border-emerald-500 shadow-sm'
+              : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500'
               }`}
           >
             {isCompleted && (
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7" />
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
               </svg>
             )}
           </button>
 
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
+            <div className="flex items-center gap-2">
               {isEditing ? (
                 <input
                   autoFocus
-                  className="text-sm font-bold bg-white/80 dark:bg-slate-800/80 border border-indigo-500/30 rounded-xl px-3 py-1 outline-none shadow-sm"
+                  className="text-sm font-bold bg-white/80 dark:bg-slate-800/80 border border-indigo-500/30 rounded-lg px-2 py-1 outline-none shadow-sm w-full"
                   value={editData.title}
                   onChange={(e) => handleChange('title', e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                 />
               ) : (
-                <>
-                  <span className={`text-sm font-black tracking-tight truncate ${isCompleted ? 'text-slate-500 line-through' : 'text-black dark:text-white'}`}>
-                    {task.title}
-                  </span>
-                  <ImportanceBadge level={task.importance} />
-                  <div className="hidden sm:flex items-center gap-2">
-                    <CategoryBadge category={task.category} />
+                <span className={`text-sm font-bold tracking-tight truncate ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-900 dark:text-gray-100'}`}>
+                  {task.title}
+                </span>
+              )}
+            </div>
+
+            {/* Minimalist Subtitle (Only show essential info like Client or Date) */}
+            {!isEditing && (
+              <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 pl-0.5 mt-0.5 min-h-[0.5rem]">
+                {task.endDate && <span>{new Date(task.endDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span>}
+                {(task.contato || task.client) && (
+                  <div className="flex items-center gap-1">
+                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                    <span className="uppercase">{task.contato || task.client}</span>
                   </div>
-                </>
-              )}
-            </div>
-            <div className="flex items-center space-x-2">
-              <StatusBadge status={task.status} />
-              {(task.contato || task.client) && (
-                <>
-                  <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                  <span className="text-[10px] text-indigo-500 font-black uppercase tracking-widest">{task.contato || task.client}</span>
-                </>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <div className={`transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''} p-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl`}>
-            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+        {/* Right Actions */}
+        <div className="flex items-center space-x-2">
+          {/* Expand Icon */}
+          <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} text-slate-300`}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (window.confirm("Deseja realmente excluir esta tarefa?")) {
-                onDelete(task.id);
-              }
-            }}
-            className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-premium"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
         </div>
       </div>
 
       {/* Expanded Details */}
       {isExpanded && (
-        <div className="px-6 pb-8 pt-2 border-t border-gray-100 dark:border-white/5 bg-slate-50/30 dark:bg-slate-950/30 animate-in slide-in-from-top-4 duration-500">
+        <div className="px-6 pb-6 pt-0 border-t border-slate-50 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/30 animate-in slide-in-from-top-1 duration-300 rounded-b-2xl">
+
+          {/* Tags visible only when expanded */}
+          <div className="flex gap-2 mb-4 pt-4 flex-wrap">
+            <StatusBadge status={task.status} />
+            <ImportanceBadge level={task.importance} />
+            <CategoryBadge category={task.category} />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm("Deseja realmente excluir esta tarefa?")) {
+                  onDelete(task.id);
+                }
+              }}
+              className="ml-auto text-xs text-red-400 hover:text-red-500 flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              Excluir
+            </button>
+          </div>
+
           {/* Action Buttons */}
-          <div className="flex justify-end mb-6 gap-3 pt-4">
+          <div className="flex justify-end mb-6 gap-3 pt-2">
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}

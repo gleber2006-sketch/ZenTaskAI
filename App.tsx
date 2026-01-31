@@ -369,107 +369,136 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
 
         {/* Header Glass / Bento Stats */}
-        <header className="px-6 md:px-10 py-6 md:py-8 shrink-0">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-1">
-              <h2 className="text-4xl font-black text-black dark:text-white tracking-tighter flex items-center gap-3">
-                ZenTask <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-violet-600 to-emerald-500 dark:from-indigo-400 dark:via-violet-400 dark:to-emerald-400">AI</span>
-                {isSyncing && <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>}
-              </h2>
-              <p className="text-slate-700 dark:text-slate-400 font-bold tracking-tight flex items-center gap-2">
-                <span className="opacity-100">{user.email}</span>
-                <span className="w-1.5 h-1.5 bg-slate-500 dark:bg-slate-700 rounded-full"></span>
-                <span className="text-indigo-700 dark:text-indigo-400 font-black uppercase text-[10px] tracking-[0.25em]">{pendingTasks.length} frentes ativas hoje</span>
-              </p>
+        {/* Global Navbar (Reference Style) */}
+        <header className="px-6 md:px-10 py-5 shrink-0 flex items-center justify-between gap-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white" style={{ boxShadow: '0 4px 14px 0 rgba(79, 70, 229, 0.4)' }}>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             </div>
+            <div className="hidden md:block">
+              <h2 className="text-xl font-black text-black dark:text-white tracking-tighter">
+                ZenTask <span className="text-indigo-600 dark:text-indigo-400">AI</span>
+              </h2>
+              <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">{pendingTasks.length} FRENTES ATIVAS</p>
+            </div>
+          </div>
 
-            {/* Bento Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-white/95 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-slate-300/20 dark:shadow-none transition-premium group hover:scale-[1.02]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-slate-600 dark:text-slate-500 uppercase tracking-[0.2em]">Performance</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{Math.round((completedTasks.length / (tasks.length || 1)) * 100)}%</span>
-                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Done</span>
-                </div>
-              </div>
+          {/* Global Search (Centered) */}
+          <div className="flex-1 max-w-2xl mx-auto relative group/search">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-none rounded-2xl text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-400"
+            />
+          </div>
 
-              <div className="bg-white/95 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-slate-300/20 dark:shadow-none transition-premium group hover:scale-[1.02]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-slate-600 dark:text-slate-500 uppercase tracking-[0.2em]">Pendente</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{pendingTasks.length}</span>
-                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Tasks</span>
-                </div>
-              </div>
-
-              <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-indigo-100 dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-indigo-100/50 dark:shadow-none transition-premium group hover:scale-[1.02] relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-2 opacity-10">
-                  <svg className="w-12 h-12 text-indigo-500 rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">Forecast</span>
-                  </div>
-                  <div className="flex items-baseline gap-2 text-indigo-600 dark:text-indigo-400">
-                    <span className="text-4xl font-black tracking-tighter">R$ {pendingTasks.reduce((acc, t) => {
-                      const val = parseFloat(t.value?.replace(/[^\d,]/g, '').replace(',', '.') || '0');
-                      return acc + val;
-                    }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                </div>
-              </div>
+          {/* Profile & Notifications */}
+          <div className="flex items-center gap-4">
+            <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors relative">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+              <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></div>
+            </button>
+            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm">
+              {/* Placeholder for user avatar */}
+              <img src={`https://ui-avatars.com/api/?name=${user.email}&background=6366f1&color=fff`} alt="User" />
             </div>
           </div>
         </header>
+
+        {/* Stats Section (Clean Cards) */}
+        <section className="px-6 md:px-10 py-8 shrink-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+            {/* ID Card (Visible only on large screens if desired, or kept as filler) - REPLACED WITH TEXT GREETING FOR REFERENCE MATCH */}
+            <div className="hidden md:flex flex-col justify-center">
+              <h1 className="text-3xl font-black text-black dark:text-white tracking-tight mb-1">
+                Olá, {user.email?.split('@')[0]}
+              </h1>
+              <p className="text-sm font-bold text-slate-500">Mantenha o foco e flua.</p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-lg transition-all group">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Performance</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+              </div>
+              <div>
+                <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{Math.round((completedTasks.length / (tasks.length || 1)) * 100)}%</span>
+                <span className="text-[10px] font-black text-slate-400 ml-1 uppercase">Concluído</span>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-lg transition-all group">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pendente</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+              </div>
+              <div>
+                <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{pendingTasks.length}</span>
+                <span className="text-[10px] font-black text-slate-400 ml-1 uppercase">Tasks</span>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-lg transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-3 opacity-5">
+                <svg className="w-16 h-16 text-emerald-500 -rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Forecast</span>
+                <div className="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500 text-[10px] font-black">$</div>
+              </div>
+              <div className="relative z-10">
+                <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400 tracking-tighter">
+                  R$ {pendingTasks.reduce((acc, t) => {
+                    const val = parseFloat(t.value?.replace(/[^\d,]/g, '').replace(',', '.') || '0');
+                    return acc + val;
+                  }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Dynamic Content Area (Bento Split) */}
         <div className="flex-1 px-6 md:px-10 pb-10 flex flex-col lg:flex-row gap-8 min-h-0 overflow-hidden">
 
           {/* Main List Section */}
-          <section className="flex-1 glass-card rounded-[3rem] flex flex-col overflow-hidden shadow-2xl shadow-indigo-500/5 relative group border-white/20 dark:border-white/5">
+          <section className="flex-1 bg-white dark:bg-slate-900/50 rounded-[2rem] flex flex-col overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative group border border-slate-100 dark:border-white/5">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.02] to-transparent pointer-events-none"></div>
 
             {/* List Header / Search */}
-            <div className="p-8 pb-4 flex flex-col gap-8 shrink-0 z-10">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h3 className="text-sm font-black text-black dark:text-white tracking-[0.2em] flex items-center gap-4 uppercase mb-2">
-                  <span className="w-1 h-8 bg-indigo-700 dark:bg-indigo-500 rounded-full"></span>
+            {/* Header / Tabs - Simplified */}
+            <div className="p-8 pb-4 flex flex-col gap-6 shrink-0 z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
+                <h3 className="text-sm font-black text-black dark:text-white tracking-[0.2em] uppercase">
                   Fluxo de Trabalho
                 </h3>
               </div>
 
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-white/5">
+              {/* Minimalist Tabs */}
+              <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900/50 rounded-lg w-fit">
                 {(['Tudo', 'Pessoal', 'Trabalho', 'Financeiro', 'Projetos'] as const).map(cat => (
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-premium ${activeCategory === cat
-                      ? 'bg-slate-900 dark:bg-slate-800 text-white dark:text-white shadow-xl border border-slate-900 dark:border-white/10'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-indigo-700 hover:bg-slate-100 font-bold transition-all'
+                    className={`px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all ${activeCategory === cat
+                      ? 'bg-white dark:bg-slate-700 text-black dark:text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                       }`}
                   >
                     {cat}
                   </button>
                 ))}
               </div>
-            </div>
 
-            <div className="relative group/search">
-              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within/search:text-indigo-500 transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Master Search: Digite qualquer coisa para filtrar seu workspace..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-4.5 bg-white/90 dark:bg-slate-950/20 border border-slate-200 dark:border-transparent focus:border-indigo-500/50 rounded-[1.5rem] text-sm font-bold transition-premium placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 outline-none backdrop-blur-md shadow-inner text-slate-900 dark:text-white"
-              />
+              <div className="h-px bg-slate-100 dark:bg-slate-800 w-full mt-2"></div>
             </div>
 
             {/* Task Area Scroller */}
