@@ -372,38 +372,38 @@ const App: React.FC = () => {
         <header className="px-6 md:px-10 py-6 md:py-8 shrink-0">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-1">
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter flex items-center gap-3">
-                ZenTask <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-500 to-emerald-400">AI</span>
+              <h2 className="text-4xl font-black text-black dark:text-white tracking-tighter flex items-center gap-3">
+                ZenTask <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-violet-600 to-emerald-500 dark:from-indigo-400 dark:via-violet-400 dark:to-emerald-400">AI</span>
                 {isSyncing && <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>}
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 font-bold tracking-tight flex items-center gap-2">
-                <span>{user.email}</span>
-                <span className="w-1.5 h-1.5 bg-slate-400 dark:bg-slate-700 rounded-full"></span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-black uppercase text-[10px] tracking-[0.25em]">{pendingTasks.length} frentes ativas hoje</span>
+              <p className="text-slate-700 dark:text-slate-400 font-bold tracking-tight flex items-center gap-2">
+                <span className="opacity-100">{user.email}</span>
+                <span className="w-1.5 h-1.5 bg-slate-500 dark:bg-slate-700 rounded-full"></span>
+                <span className="text-indigo-700 dark:text-indigo-400 font-black uppercase text-[10px] tracking-[0.25em]">{pendingTasks.length} frentes ativas hoje</span>
               </p>
             </div>
 
             {/* Bento Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-white dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-slate-200/50 dark:shadow-none transition-premium group hover:scale-[1.02]">
+              <div className="bg-white/95 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-slate-300/20 dark:shadow-none transition-premium group hover:scale-[1.02]">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em]">Performance</span>
+                  <span className="text-[10px] font-black text-slate-600 dark:text-slate-500 uppercase tracking-[0.2em]">Performance</span>
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{Math.round((completedTasks.length / (tasks.length || 1)) * 100)}%</span>
-                  <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Done</span>
+                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Done</span>
                 </div>
               </div>
 
-              <div className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-white dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-slate-200/50 dark:shadow-none transition-premium group hover:scale-[1.02]">
+              <div className="bg-white/95 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-slate-300/20 dark:shadow-none transition-premium group hover:scale-[1.02]">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em]">Pendente</span>
+                  <span className="text-[10px] font-black text-slate-600 dark:text-slate-500 uppercase tracking-[0.2em]">Pendente</span>
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{pendingTasks.length}</span>
-                  <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tasks</span>
+                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Tasks</span>
                 </div>
               </div>
 
@@ -437,8 +437,8 @@ const App: React.FC = () => {
             {/* List Header / Search */}
             <div className="p-8 pb-4 flex flex-col gap-8 shrink-0 z-10">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-[0.2em] flex items-center gap-4 uppercase mb-2">
-                  <span className="w-1 h-8 bg-indigo-600 dark:bg-indigo-500 rounded-full"></span>
+                <h3 className="text-sm font-black text-black dark:text-white tracking-[0.2em] flex items-center gap-4 uppercase mb-2">
+                  <span className="w-1 h-8 bg-indigo-700 dark:bg-indigo-500 rounded-full"></span>
                   Fluxo de Trabalho
                 </h3>
               </div>
@@ -450,7 +450,7 @@ const App: React.FC = () => {
                     onClick={() => setActiveCategory(cat)}
                     className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-premium ${activeCategory === cat
                       ? 'bg-slate-900 dark:bg-slate-800 text-white dark:text-white shadow-xl border border-slate-900 dark:border-white/10'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 font-bold transition-all'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-indigo-700 hover:bg-slate-100 font-bold transition-all'
                       }`}
                   >
                     {cat}
@@ -468,7 +468,7 @@ const App: React.FC = () => {
                 placeholder="Master Search: Digite qualquer coisa para filtrar seu workspace..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-4.5 bg-slate-100/30 dark:bg-slate-950/20 border border-transparent focus:border-indigo-500/20 rounded-[1.5rem] text-sm font-bold transition-premium placeholder:text-slate-500/60 focus:bg-white dark:focus:bg-slate-900 outline-none backdrop-blur-md shadow-inner text-slate-900 dark:text-white"
+                className="w-full pl-14 pr-6 py-4.5 bg-white/90 dark:bg-slate-950/20 border border-slate-200 dark:border-transparent focus:border-indigo-500/50 rounded-[1.5rem] text-sm font-bold transition-premium placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 outline-none backdrop-blur-md shadow-inner text-slate-900 dark:text-white"
               />
             </div>
 
@@ -564,7 +564,7 @@ const App: React.FC = () => {
               </div>
 
               {/* Command Input Area */}
-              <div className="p-8 pt-4 bg-gradient-to-t from-slate-50/50 dark:from-slate-950/20 to-transparent">
+              <div className="p-8 pt-4 bg-gradient-to-t from-white dark:from-slate-950/20 to-transparent">
                 <form onSubmit={handleCommand} className="relative group/form">
                   {selectedFile && (
                     <div className="absolute bottom-full left-0 right-0 mb-6 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[1.5rem] border border-indigo-500/20 shadow-2xl flex items-center animate-in slide-in-from-bottom-4 transition-premium">
@@ -596,13 +596,13 @@ const App: React.FC = () => {
                         }
                       }}
                       placeholder="Brainstorm with Zen AI..."
-                      className="w-full pl-8 pr-24 py-6 bg-white dark:bg-slate-900/80 border border-transparent focus:border-indigo-500/20 rounded-[2.5rem] text-sm font-bold transition-premium placeholder:text-slate-500/60 outline-none shadow-2xl shadow-indigo-900/10 resize-none custom-scrollbar min-h-[0px] leading-relaxed block backdrop-blur-md text-slate-900 dark:text-white"
+                      className="w-full pl-8 pr-24 py-6 bg-white dark:bg-slate-900/80 border border-transparent focus:border-indigo-500/20 rounded-[2.5rem] text-sm font-bold transition-premium placeholder:text-slate-500 outline-none shadow-2xl shadow-indigo-900/10 resize-none custom-scrollbar min-h-[0px] leading-relaxed block backdrop-blur-md text-black dark:text-white"
                       rows={2}
                       disabled={isLoading}
                     />
 
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="p-3 text-slate-400 hover:text-indigo-500 transition-premium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl">
+                      <button type="button" onClick={() => fileInputRef.current?.click()} className="p-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 transition-premium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
                       </button>
                       <button type="submit" disabled={isLoading || (!input.trim() && !selectedFile)} className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-4 rounded-[1.25rem] hover:scale-110 active:scale-90 transition-premium disabled:opacity-30 disabled:hover:scale-100 shadow-2xl shadow-indigo-500/20">
