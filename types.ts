@@ -1,11 +1,12 @@
-
-export type TaskStatus = 'Para Fazer' | 'Em Andamento' | 'Aguardando' | 'Concluída';
-export type TaskOrigin = 'texto' | 'anexo';
-export type ImportanceLevel = 'baixa' | 'média' | 'alta';
+// Legacy Types (Deprecated)
+// export type TaskStatus = ... (Removed to avoid conflict)
+// export type ImportanceLevel = ... (Removed)
 
 export type PaymentStatus = 'Não aplicável' | 'Pendente' | 'Pago';
 export type PaymentType = 'À vista' | 'Parcelado';
-export type TaskCategory = 'Pessoal' | 'Trabalho' | 'Clientes' | 'Financeiro' | 'Estudos' | 'Projetos';
+// export type TaskCategory = ... (Deprecated, use Category interface)
+export type TaskCategory = string; // Loose typing for legacy compatibility
+export type ImportanceLevel = string; // Loose typing for legacy compatibility
 
 export interface Installment {
   numero: number;
@@ -54,54 +55,40 @@ export interface Attachment {
   createdAt: string;
 }
 
+// Task System
+export type TaskPriority = 'baixa' | 'media' | 'alta' | 'critica';
+export type TaskStatus = 'pendente' | 'em_progresso' | 'bloqueada' | 'concluida';
+export type TaskType = 'tarefa' | 'rotina' | 'evento' | 'meta';
+
 export interface Task {
   id: string;
-  title: string;
-  description?: string;
-  client?: string; // legando (preferir contato)
-  service?: string; // legado (preferir tarefa)
-  contato?: string;
-  empresa?: string;
-  tarefa?: string;
-  value?: string;
-  recurrence?: boolean;
-  importance?: ImportanceLevel;
+  userId: string;
+  titulo: string;
+  descricao?: string;
+
+  // Relations
+  categoria_id: string;
+  subcategoria_id?: string;
+
+  // State
+  prioridade: TaskPriority;
   status: TaskStatus;
-  origin: TaskOrigin;
-  startDate?: string;
-  endDate?: string;
-  createdAt: string;
+  tipo: TaskType;
+
+  // Planning
+  prazo?: any; // Timestamp
+  data_inicio?: any; // Timestamp
+  recorrencia?: string;
+  ordem: number;
+
+  // Metadata
+  criada_em: any; // Timestamp
+  atualizada_em: any; // Timestamp
+
+  // Optional legacy fields mapping (kept loose for transition safety if needed, but discouraged)
+  client?: string;
+  value?: string;
   pagamento?: PaymentData;
-  attachments?: Attachment[];
-  category: TaskCategory;
-
-  // Campos Pessoais
-  local?: string;
-  humor?: string;
-  participantes?: string;
-  bemEstar?: string;
-
-  // Campos Clientes
-  briefing?: string;
-  linkArquivos?: string;
-  prazoAprovação?: string;
-
-  // Campos Financeiros
-  fluxo?: 'Entrada' | 'Saída';
-  tipoFinanceiro?: 'Fixo' | 'Variável';
-  comprovante?: string;
-
-  // Campos Estudos
-  materia?: string;
-  topico?: string;
-  linkAula?: string;
-  dataRevisao?: string;
-
-  // Campos Projetos
-  milestone?: string;
-  stack?: string;
-  repo?: string;
-  sprint?: string;
 }
 
 export enum ActionType {
