@@ -4,113 +4,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenTask AI | Intelligent Workspace</title>
+  <title>ZenTask Pro | Enterprise Workspace</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&display=swap"
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            slate: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#020617',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
     :root {
-      --bg-light: #f8fafc;
-      --bg-dark: #020617;
-      --primary: #6366f1;
-      --accent: #8b5cf6;
-      --glass-white: rgba(255, 255, 255, 0.4);
-      --glass-dark: rgba(15, 23, 42, 0.4);
+      --bg-body: #f8fafc;
+      --bg-surface: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+
+    .dark {
+      --bg-body: #020617;
+      --bg-surface: #0f172a;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
     }
 
     body {
-      font-family: 'Manrope', sans-serif;
-      background-color: var(--bg-light);
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
       margin: 0;
-      overflow-x: hidden;
-      color: #1e293b;
-      min-height: 100vh;
-      position: relative;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      font-family: 'Outfit', sans-serif;
-    }
-
-    .dark body {
-      background-color: var(--bg-dark);
-      color: #f1f5f9;
-    }
-
-    /* Noise Texture Overlay */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-      opacity: 0.03;
-      pointer-events: none;
-      z-index: 9999;
-    }
-
-    .dark body::before {
-      opacity: 0.05;
-    }
-
-    /* Glow Blobs */
-    .glow-blob {
-      position: fixed;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      filter: blur(120px);
-      z-index: -1;
-      opacity: 0.15;
-      pointer-events: none;
-    }
-
-    .blob-1 {
-      top: -100px;
-      right: -100px;
-      background: var(--primary);
-    }
-
-    .blob-2 {
-      bottom: -100px;
-      left: -100px;
-      background: var(--accent);
-    }
-
-    .dark .glow-blob {
-      opacity: 0.08;
-    }
-
-    /* Premium Glassmorphism */
-    .glass-card {
-      background: var(--glass-white);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-    }
-
-    .dark .glass-card {
-      background: var(--glass-dark);
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-    }
-
-    /* Custom Transitions */
-    .transition-premium {
-      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-
+    /* Standard Scrollbar */
     ::-webkit-scrollbar {
-      width: 4px;
+      width: 6px;
+      height: 6px;
     }
 
     ::-webkit-scrollbar-track {
@@ -118,19 +74,23 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.1);
-      border-radius: 10px;
+      background: var(--text-muted);
+      opacity: 0.2;
+      border-radius: 3px;
     }
 
-    .dark ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.05);
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-main);
+    }
+
+    /* Utility Helpers */
+    .border-theme {
+      border-color: var(--border-color);
     }
   </style>
 </head>
 
-<body class="selection:bg-indigo-500/30">
-  <div class="glow-blob blob-1"></div>
-  <div class="glow-blob blob-2"></div>
+<body>
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

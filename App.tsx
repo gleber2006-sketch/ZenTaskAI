@@ -1,460 +1,263 @@
-import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { Task, ActionType, AIResponse, TaskOrigin, CreatedTaskData, TaskStatus, PaymentData, Installment, TaskCategory } from './types';
-import { processTaskCommand, FilePart } from './services/geminiService';
-import TaskItem from './components/TaskItem';
-import {
-  collection,
-  onSnapshot,
-  query,
-  orderBy,
-  updateDoc,
-  doc,
-  deleteDoc,
-  writeBatch,
-  serverTimestamp,
-  where
-} from 'firebase/firestore';
+
+import React, { useState, useEffect } from 'react';
 import { db, auth } from './services/firebase';
+import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, where, Timestamp } from 'firebase/firestore';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { Task, TaskCategory } from './types';
 import Login from './components/Login';
+import TaskItem from './components/TaskItem';
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [input, setInput] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('zen-theme');
-      return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
-    return false;
-  });
-  const [selectedFile, setSelectedFile] = useState<{ file: File; base64: string; preview: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [activeCategory, setActiveCategory] = useState<TaskCategory | 'Tudo'>('Tudo');
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [history, setHistory] = useState<{ role: 'user' | 'assistant'; text: string; hasFile?: boolean }[]>([
-    { role: 'assistant', text: 'Sou seu assistente de tarefas com inteligência financeira integrada. Você pode digitar comandos ou anexar arquivos para criar fluxos completos.' }
-  ]);
+  const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
 
-  const historyEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const scrollToBottom = () => {
-    historyEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [history]);
-
-  // Gestão de autenticação e Tema
+  // Load User
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setAuthLoading(false);
+      setLoading(false);
     });
-
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('zen-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('zen-theme', 'light');
-    }
-
     return () => unsubscribe();
-  }, [darkMode]);
+  }, []);
 
-  // Sincronização em tempo real com o Firestore (Isolada por Usuário)
+  // Load Tasks
   useEffect(() => {
-    if (!user) return;
-
-    const q = query(
-      collection(db, 'tasks'),
-      where('userId', '==', user.uid)
-    );
-    setIsSyncing(true);
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const tasksData = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      })) as Task[];
-      setTasks(tasksData);
-      setTimeout(() => setIsSyncing(false), 500); // Feedback visual curto
-    }, (error) => {
-      console.error("Erro na sincronização do Firestore:", error);
-      setIsSyncing(false);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  const addTasksBulk = useCallback(async (taskDataList: CreatedTaskData[], origin: TaskOrigin = 'texto') => {
-    if (!user) return;
-    const batch = writeBatch(db);
-
-    taskDataList.forEach(data => {
-      // Inicializa dados de pagamento
-      const tipo = data.payment?.tipo || 'À vista';
-      const totalParcelas = data.payment?.totalParcelas || 1;
-      const parcelas: Installment[] = [];
-
-      if (data.payment?.parcelas) {
-        parcelas.push(...data.payment.parcelas);
-      } else {
-        for (let i = 1; i <= totalParcelas; i++) {
-          parcelas.push({ numero: i, paga: data.payment?.status === 'Pago' });
-        }
-      }
-
-      const pagamento: PaymentData = {
-        status: data.payment?.status || (data.value ? 'Pendente' : 'Não aplicável'),
-        tipo,
-        totalParcelas,
-        dataPagamento: data.payment?.dataPagamento || "",
-        parcelas
-      };
-
-      const newTaskRef = doc(collection(db, 'tasks'));
-      batch.set(newTaskRef, {
-        userId: user.uid,
-        title: data.title,
-        category: data.category || 'Trabalho',
-        description: data.description || "",
-        client: data.client || "",
-        service: data.service || "",
-        contato: data.contato || "",
-        empresa: data.empresa || "",
-        tarefa: data.tarefa || "",
-        value: data.value || "",
-        recurrence: data.recurrence || false,
-        importance: data.importance || "baixa",
-        startDate: data.startDate || "",
-        endDate: data.endDate || "",
-        status: 'Para Fazer',
-        origin,
-        createdAt: new Date().toISOString(),
-        pagamento,
-        // Novos campos (Surpresa)
-        local: data.local || "",
-        humor: data.humor || "",
-        participantes: data.participantes || "",
-        bemEstar: data.bemEstar || "",
-        briefing: data.briefing || "",
-        linkArquivos: data.linkArquivos || "",
-        prazoAprovação: data.prazoAprovação || "",
-        fluxo: data.fluxo || "Entrada",
-        tipoFinanceiro: data.tipoFinanceiro || "Fixo",
-        comprovante: data.comprovante || "",
-        materia: data.materia || "",
-        topico: data.topico || "",
-        linkAula: data.linkAula || "",
-        dataRevisao: data.dataRevisao || "",
-        milestone: data.milestone || "",
-        stack: data.stack || "",
-        repo: data.repo || "",
-        sprint: data.sprint || ""
-      });
-    });
-
-    await batch.commit();
-  }, [user]);
-
-  const toggleTask = useCallback(async (id: string) => {
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
-
-    const taskRef = doc(db, 'tasks', id);
-    setIsSyncing(true);
-    await updateDoc(taskRef, {
-      status: task.status === 'Concluída' ? 'Para Fazer' : 'Concluída'
-    });
-  }, [tasks]);
-
-  const updateTask = useCallback(async (id: string, updatedFields: Partial<Task>) => {
-    const taskRef = doc(db, 'tasks', id);
-    // Removemos o ID dos campos para não tentar sobrescrevê-lo no Firestore
-    const { id: _, ...fieldsToUpdate } = updatedFields as any;
-    await updateDoc(taskRef, fieldsToUpdate);
-  }, []);
-
-  const deleteTask = useCallback(async (id: string) => {
-    setIsSyncing(true);
-    const taskRef = doc(db, 'tasks', id);
-    await deleteDoc(taskRef);
-  }, []);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = (reader.result as string).split(',')[1];
-      setSelectedFile({
-        file,
-        base64: base64String,
-        preview: URL.createObjectURL(file)
-      });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const removeFile = () => {
-    setSelectedFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleCommand = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if ((!input.trim() && !selectedFile) || isLoading) return;
-
-    const userMsg = input.trim();
-    const fileData = selectedFile;
-
-    setInput('');
-    setSelectedFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-
-    setHistory(prev => [...prev, {
-      role: 'user',
-      text: userMsg || (fileData ? `[Arquivo: ${fileData.file.name}]` : ""),
-      hasFile: !!fileData
-    }]);
-    setIsLoading(true);
-
-    let filePart: FilePart | undefined;
-    if (fileData) {
-      filePart = {
-        mimeType: fileData.file.type,
-        data: fileData.base64
-      };
-    }
-
-    try {
-      const response: AIResponse = await processTaskCommand(userMsg, tasks, filePart);
-
-      if (response.action === ActionType.CREATE && response.createdTasks) {
-        await addTasksBulk(response.createdTasks, fileData ? 'anexo' : 'texto');
-      } else if (response.action === ActionType.COMPLETE && response.id) {
-        await toggleTask(response.id);
-      } else if (response.action === ActionType.DELETE && response.id) {
-        await deleteTask(response.id);
-      }
-
-      setHistory(prev => [...prev, { role: 'assistant', text: response.message }]);
-    } catch (error: any) {
-      console.error("Erro ao processar comando:", error);
-      const errorDetail = error?.message || "Erro desconhecido";
-      setHistory(prev => [...prev, {
-        role: 'assistant',
-        text: `Falha técnica detectada: ${errorDetail}. Por favor, verifique sua conexão e tente novamente.`
-      }]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const startVoiceInput = () => {
-    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Seu navegador não suporta reconhecimento de voz.");
+    if (!user) {
+      setTasks([]);
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'pt-BR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    const q = query(collection(db, 'tasks'), where('userId', '==', user.uid));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const tasksData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Task[];
+      setTasks(tasksData);
+    });
+    return () => unsubscribe();
+  }, [user]);
 
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = (event: any) => {
-      console.error(event.error);
-      setIsListening(false);
-    };
+  // Actions
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim() || !user) return;
 
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
-      // Auto-submit opcional pode ser adicionado aqui
-    };
-
-    recognition.start();
+    await addDoc(collection(db, 'tasks'), {
+      title: newTaskTitle,
+      completed: false,
+      userId: user.uid,
+      createdAt: Timestamp.now(),
+      status: 'Para Fazer',
+      importance: 'média',
+      category: activeCategory === 'Tudo' ? 'Trabalho' : activeCategory,
+      pagamento: { status: 'Não aplicável', tipo: 'À vista' }
+    });
+    setNewTaskTitle('');
   };
 
-  const filteredTasks = useMemo(() => {
-    let list = tasks;
-    if (activeCategory !== 'Tudo') {
-      list = tasks.filter(t => (t.category || 'Trabalho') === activeCategory);
+  const toggleTask = async (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      const newStatus = task.status === 'Concluída' ? 'Para Fazer' : 'Concluída';
+      await updateDoc(doc(db, 'tasks', id), {
+        status: newStatus,
+        completed: !task.completed
+      });
     }
+  };
 
-    if (searchTerm.trim()) {
-      const lowerSearch = searchTerm.toLowerCase();
-      list = list.filter(t =>
-        t.title.toLowerCase().includes(lowerSearch) ||
-        (t.description || '').toLowerCase().includes(lowerSearch) ||
-        (t.contato || '').toLowerCase().includes(lowerSearch) ||
-        (t.empresa || '').toLowerCase().includes(lowerSearch)
-      );
-    }
+  const deleteTask = async (id: string) => {
+    await deleteDoc(doc(db, 'tasks', id));
+  };
 
-    // Ordenação no cliente para evitar problemas de índices compostos no Firestore
-    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [tasks, activeCategory, searchTerm]);
+  const updateTask = async (id: string, fields: Partial<Task>) => {
+    await updateDoc(doc(db, 'tasks', id), fields);
+  };
 
-  const pendingTasks = filteredTasks.filter(t => t.status !== 'Concluída');
-  const completedTasks = filteredTasks.filter(t => t.status === 'Concluída');
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0f172a] text-indigo-600">
-        <svg className="animate-spin h-8 w-8 text-indigo-500" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      </div>
-    );
-  }
+  // Filtering
+  const filteredTasks = tasks.filter(task => {
+    const matchesCategory = activeCategory === 'Tudo' || task.category === activeCategory;
+    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-  if (!user) {
-    return <Login />;
-  }
+  const pendingTasks = tasks.filter(t => t.status !== 'Concluída');
+  const completedTasks = tasks.filter(t => t.status === 'Concluída');
+
+  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400 text-sm font-medium">Carregando...</div>;
+  if (!user) return <Login />;
 
   return (
-    <div className={`flex h-[100dvh] transition-colors duration-500 ${darkMode ? 'dark bg-[#020617]' : 'bg-[#f8fafc]'} overflow-hidden font-['Manrope']`}>
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
 
-      {/* Sidebar Minimalista (Concept Style) */}
-      <aside className="hidden md:flex flex-col w-20 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800 transition-all items-center py-8 shrink-0 z-20">
-        <div className="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/20 mb-10 group cursor-pointer hover:rotate-6 transition-transform">
-          <svg className="w-7 h-7 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+      {/* SIDEBAR (Fixed) */}
+      <aside className="w-64 bg-slate-900 text-white flex flex-col shrink-0 transition-all z-20 hidden md:flex">
+        {/* Brand */}
+        <div className="h-16 flex items-center px-6 border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <span className="font-semibold tracking-tight text-lg">ZenTask Pro</span>
+          </div>
         </div>
 
-        <nav className="flex flex-col gap-6 flex-1">
-          <button
-            onClick={() => { setActiveCategory('Tudo'); setSearchTerm(''); }}
-            className={`p-3 rounded-2xl shadow-inner border transition-premium relative group ${activeCategory === 'Tudo' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800' : 'text-gray-400 hover:text-indigo-500 hover:bg-white dark:hover:bg-slate-800 border-transparent'}`}>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-            <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Dashboard</div>
-          </button>
-          <button className="p-3 text-gray-400 hover:text-indigo-500 transition-premium hover:bg-white dark:hover:bg-slate-800 rounded-2xl relative group">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Calendário</div>
-          </button>
-          <button
-            onClick={() => setActiveCategory('Financeiro')}
-            className={`p-3 rounded-2xl transition-premium relative group ${activeCategory === 'Financeiro' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800' : 'text-gray-400 hover:text-indigo-500 hover:bg-white dark:hover:bg-slate-800 border-transparent'}`}>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Financeiro</div>
-          </button>
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-1">
+          <a href="#" className="flex items-center gap-3 px-3 py-2 text-sm font-medium bg-slate-800 text-white rounded-md">
+            <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+            Dashboard
+          </a>
+          <a href="#" className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            Meus Projetos
+          </a>
+          <a href="#" className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            Calendário
+          </a>
         </nav>
 
-        <div className="flex flex-col gap-4 mt-auto">
-          <button onClick={() => setDarkMode(!darkMode)} className="p-3 text-gray-400 hover:text-amber-500 transition-premium hover:bg-white dark:hover:bg-slate-800 rounded-2xl">
-            {darkMode ? <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg> : <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>}
-          </button>
-          <button onClick={() => signOut(auth)} className="p-3 text-gray-400 hover:text-red-500 transition-premium hover:bg-white dark:hover:bg-slate-800 rounded-2xl">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-          </button>
+        {/* Categories (Mini) */}
+        <div className="px-6 py-6 border-t border-slate-800">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Workspaces</p>
+          <div className="space-y-3">
+            {(['Trabalho', 'Pessoal', 'Financeiro'] as const).map(cat => (
+              <div key={cat} className="flex items-center gap-2 cursor-pointer group" onClick={() => setActiveCategory(cat)}>
+                <div className={`w-2 h-2 rounded-full ${activeCategory === cat ? 'bg-indigo-500' : 'bg-slate-700 group-hover:bg-slate-500'}`}></div>
+                <span className={`text-sm ${activeCategory === cat ? 'text-white' : 'text-slate-400 group-hover:text-slate-300'}`}>{cat}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* User */}
+        <div className="p-4 border-t border-slate-800">
+          <div className="flex items-center gap-3 px-2 py-2 cursor-pointer hover:bg-slate-800 rounded-md transition-colors" onClick={handleLogout}>
+            <img src={`https://ui-avatars.com/api/?name=${user.email}&background=334155&color=fff`} className="w-8 h-8 rounded-full bg-slate-700" alt="User" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">{user.email?.split('@')[0]}</p>
+              <p className="text-xs text-slate-500 truncate">Sair do sistema</p>
+            </div>
+          </div>
         </div>
       </aside>
 
-      {/* Main Container */}
-      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+      {/* MAIN CONTENT */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-        {/* Header Glass / Bento Stats */}
-        {/* Global Navbar (Reference Style) */}
-        <header className="px-6 md:px-10 py-5 shrink-0 flex items-center justify-between gap-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white" style={{ boxShadow: '0 4px 14px 0 rgba(79, 70, 229, 0.4)' }}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            </div>
-            <div className="hidden md:block">
-              <h2 className="text-xl font-black text-black dark:text-white tracking-tighter">
-                ZenTask <span className="text-indigo-600 dark:text-indigo-400">AI</span>
-              </h2>
-              <p className="text-[10px] text-slate-500 font-bold tracking-widest uppercase">{pendingTasks.length} FRENTES ATIVAS</p>
-            </div>
-          </div>
+        {/* TOPBAR */}
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 shrink-0">
+          {/* Mobile Menu Trigger (Visible only on small screens) */}
+          <button className="md:hidden p-2 -ml-2 text-slate-500">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
 
-          {/* Global Search (Centered) */}
-          <div className="flex-1 max-w-2xl mx-auto relative group/search">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            </div>
+          {/* Global Search */}
+          <div className="flex-1 max-w-xl mx-auto md:mx-0 relative">
+            <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Buscar tarefas, projetos ou tags..."
+              className="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-md text-sm text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-none rounded-2xl text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-400"
             />
           </div>
 
-          {/* Profile & Notifications */}
-          <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors relative">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-              <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></div>
+          {/* Actions */}
+          <div className="flex items-center gap-4 ml-4">
+            <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 relative">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
             </button>
-            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm">
-              {/* Placeholder for user avatar */}
-              <img src={`https://ui-avatars.com/api/?name=${user.email}&background=6366f1&color=fff`} alt="User" />
-            </div>
           </div>
         </header>
 
-        {/* Stats Section (Clean Cards) */}
-        <section className="px-6 md:px-10 py-8 shrink-0">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {/* DASHBOARD SCROLL AREA */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
 
-            {/* ID Card (Visible only on large screens if desired, or kept as filler) - REPLACED WITH TEXT GREETING FOR REFERENCE MATCH */}
-            <div className="hidden md:flex flex-col justify-center">
-              <h1 className="text-3xl font-black text-black dark:text-white tracking-tight mb-1">
-                Olá, {user.email?.split('@')[0]}
-              </h1>
-              <p className="text-sm font-bold text-slate-500">Mantenha o foco e flua.</p>
+          {/* HEADER AREA */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Visão Geral</h1>
+              <p className="text-sm text-slate-500 mt-1">Bem-vindo de volta, aqui está o que está acontecendo hoje.</p>
             </div>
+            <div className="flex items-center gap-3">
+              <button className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-sm transition-colors">
+                Exportar Relatório
+              </button>
+              <button className="px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 shadow-sm transition-colors flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                Novo Projeto
+              </button>
+            </div>
+          </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-lg transition-all group">
+          {/* METRICS ROW */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Metric 1 */}
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Performance</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                <span className="text-xs font-semibold text-slate-500 uppercase">Tarefas Totais</span>
+                <span className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-md">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                </span>
               </div>
-              <div>
-                <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{Math.round((completedTasks.length / (tasks.length || 1)) * 100)}%</span>
-                <span className="text-[10px] font-black text-slate-400 ml-1 uppercase">Concluído</span>
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-bold text-slate-900 dark:text-white">{tasks.length}</span>
+                <span className="text-xs font-medium text-emerald-600 mb-1">+12%</span>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-lg transition-all group">
+            {/* Metric 2 */}
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pendente</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                <span className="text-xs font-semibold text-slate-500 uppercase">Pendentes</span>
+                <span className="p-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-md">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </span>
               </div>
-              <div>
-                <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{pendingTasks.length}</span>
-                <span className="text-[10px] font-black text-slate-400 ml-1 uppercase">Tasks</span>
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-bold text-slate-900 dark:text-white">{pendingTasks.length}</span>
+                <span className="text-xs font-medium text-slate-400 mb-1">items</span>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-lg transition-all group relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-3 opacity-5">
-                <svg className="w-16 h-16 text-emerald-500 -rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {/* Metric 3 */}
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-semibold text-slate-500 uppercase">Concluídas</span>
+                <span className="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-md">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                </span>
               </div>
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Forecast</span>
-                <div className="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500 text-[10px] font-black">$</div>
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-bold text-slate-900 dark:text-white">{completedTasks.length}</span>
+                <span className="text-xs font-medium text-emerald-600 mb-1">vs. ontem</span>
               </div>
-              <div className="relative z-10">
-                <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400 tracking-tighter">
+            </div>
+
+            {/* Metric 4 */}
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-semibold text-slate-500 uppercase">Financeiro (Previsto)</span>
+                <span className="p-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-md">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </span>
+              </div>
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-bold text-slate-900 dark:text-white">
                   R$ {pendingTasks.reduce((acc, t) => {
                     const val = parseFloat(t.value?.replace(/[^\d,]/g, '').replace(',', '.') || '0');
                     return acc + val;
@@ -463,191 +266,68 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
-        </section>
 
-        {/* Dynamic Content Area (Bento Split) */}
-        <div className="flex-1 px-6 md:px-10 pb-10 flex flex-col lg:flex-row gap-8 min-h-0 overflow-hidden">
+          {/* MAIN LIST CONTAINER */}
+          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col min-h-[500px]">
 
-          {/* Main List Section */}
-          <section className="flex-1 bg-white dark:bg-slate-900/50 rounded-[2rem] flex flex-col overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none relative group border border-slate-100 dark:border-white/5">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.02] to-transparent pointer-events-none"></div>
-
-            {/* List Header / Search */}
-            {/* Header / Tabs - Simplified */}
-            <div className="p-8 pb-4 flex flex-col gap-6 shrink-0 z-10">
+            {/* List Toolbar */}
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50 rounded-t-lg">
               <div className="flex items-center gap-4">
-                <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
-                <h3 className="text-sm font-black text-black dark:text-white tracking-[0.2em] uppercase">
-                  Fluxo de Trabalho
-                </h3>
-              </div>
-
-              {/* Minimalist Tabs */}
-              <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900/50 rounded-lg w-fit">
-                {(['Tudo', 'Pessoal', 'Trabalho', 'Financeiro', 'Projetos'] as const).map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all ${activeCategory === cat
-                      ? 'bg-white dark:bg-slate-700 text-black dark:text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                      }`}
-                  >
-                    {cat}
+                <h2 className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Tarefas Recentes</h2>
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+                <div className="flex gap-1">
+                  {/* View Toggles */}
+                  <button onClick={() => setViewMode('list')} className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                   </button>
-                ))}
+                  <button onClick={() => setViewMode('board')} className={`p-1.5 rounded ${viewMode === 'board' ? 'bg-white shadow text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM14 13a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
+                  </button>
+                </div>
               </div>
 
-              <div className="h-px bg-slate-100 dark:bg-slate-800 w-full mt-2"></div>
+              {/* Add Task Input (Quick) */}
+              <form onSubmit={handleAddTask} className="flex-1 max-w-md flex items-center gap-2 ml-4">
+                <input
+                  type="text"
+                  placeholder="Adicionar nova tarefa... (Pressione Enter)"
+                  className="flex-1 text-sm border-slate-200 dark:border-slate-700 rounded-md focus:ring-1 focus:ring-indigo-500 py-1.5 px-3 bg-white dark:bg-slate-800"
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                />
+                <button type="submit" className="bg-indigo-600 text-white p-1.5 rounded-md hover:bg-indigo-700 transition">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                </button>
+              </form>
             </div>
 
-            {/* Task Area Scroller */}
-            <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
+            {/* Tasks Content */}
+            <div className="p-4 flex-1">
               {filteredTasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center py-20 opacity-60 animate-in fade-in duration-1000">
-                  <div className="w-24 h-24 bg-slate-200/50 dark:bg-slate-800/80 rounded-[2.5rem] flex items-center justify-center mb-8 rotate-12">
-                    <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-600 dark:text-slate-300 tracking-tighter uppercase">Zen Space</h3>
-                  <p className="text-sm mt-3 max-w-[220px] font-bold leading-relaxed text-slate-500 dark:text-slate-400">Tudo sob controle. Seu workspace está limpo e organizado.</p>
+                <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+                  <svg className="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                  <p className="text-sm">Nenhuma tarefa encontrada.</p>
+                  <p className="text-xs">Tente ajustar seus filtros ou criar uma nova tarefa.</p>
                 </div>
               ) : (
-                <div className="space-y-10 pt-4">
-                  {pendingTasks.length > 0 && (
-                    <div>
-                      <h4 className="flex items-center gap-4 text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] mb-6">
-                        <span className="shrink-0">Prioridades Ativas</span>
-                        <span className="flex-1 h-[1px] bg-gradient-to-r from-indigo-500/20 to-transparent"></span>
-                      </h4>
-                      <div className="space-y-4">
-                        {pendingTasks.map(task => (
-                          <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} onUpdate={updateTask} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {completedTasks.length > 0 && (
-                    <div className="opacity-40 grayscale transition-all duration-700 hover:opacity-100 hover:grayscale-0">
-                      <h4 className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6">
-                        <span className="shrink-0">Arquivo de Conclusão</span>
-                        <span className="flex-1 h-[1px] bg-gradient-to-r from-slate-400/20 to-transparent"></span>
-                      </h4>
-                      <div className="space-y-4">
-                        {completedTasks.map(task => (
-                          <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} onUpdate={updateTask} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                <div className="space-y-1">
+                  {filteredTasks.map(task => (
+                    <TaskItem
+                      key={task.id}
+                      task={task}
+                      onToggle={toggleTask}
+                      onDelete={deleteTask}
+                      onUpdate={updateTask}
+                    />
+                  ))}
                 </div>
               )}
             </div>
-          </section>
+          </div>
 
-          {/* Assistant Panel (Concept Integration) */}
-          <section className="w-full lg:w-[400px] xl:w-[440px] flex flex-col gap-6 shrink-0 relative">
-            <div className="flex-1 glass-card rounded-[3rem] flex flex-col overflow-hidden relative shadow-2xl shadow-indigo-900/10 border-white/20 dark:border-white/5">
-              <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/[0.03] to-transparent pointer-events-none"></div>
-
-              <div className="p-8 border-b border-gray-100 dark:border-white/5 flex items-center justify-between z-10">
-                <div className="flex items-center gap-4">
-                  <div className="relative group">
-                    <div className="w-14 h-14 rounded-[1.5rem] bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-900 font-black text-xl shadow-2xl group-hover:rotate-6 transition-transform">AI</div>
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-white dark:border-slate-900 shadow-lg"></div>
-                  </div>
-                  <div>
-                    <h3 className="font-black text-slate-900 dark:text-white uppercase text-xs tracking-[0.2em]">Zen Neural</h3>
-                    <p className="text-[10px] text-indigo-500 font-black uppercase tracking-widest mt-0.5">Active Core v2.4</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Chat Area */}
-              <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar scroll-smooth">
-                {history.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-4 duration-500`}>
-                    <div className={`max-w-[90%] px-6 py-5 rounded-[2rem] text-sm leading-relaxed font-bold ${msg.role === 'user'
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-tr-none shadow-2xl shadow-slate-900/20'
-                      : 'bg-white dark:bg-slate-800/60 text-slate-900 dark:text-slate-100 rounded-tl-none border border-slate-200 dark:border-white/5 backdrop-blur-md shadow-lg'
-                      }`}>
-                      {msg.hasFile && (
-                        <div className="flex items-center gap-2 mb-4 p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-indigo-500/20">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                          Inteligência de Dados Ativa
-                        </div>
-                      )}
-                      <div className="whitespace-pre-wrap">{msg.text}</div>
-                    </div>
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white/30 dark:bg-slate-800/30 px-8 py-5 rounded-[2rem] rounded-tl-none border border-transparent flex items-center gap-2 backdrop-blur-sm">
-                      <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
-                      <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                      <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-                    </div>
-                  </div>
-                )}
-                <div ref={historyEndRef} />
-              </div>
-
-              {/* Command Input Area */}
-              <div className="p-8 pt-4 bg-gradient-to-t from-white dark:from-slate-950/20 to-transparent">
-                <form onSubmit={handleCommand} className="relative group/form">
-                  {selectedFile && (
-                    <div className="absolute bottom-full left-0 right-0 mb-6 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[1.5rem] border border-indigo-500/20 shadow-2xl flex items-center animate-in slide-in-from-bottom-4 transition-premium">
-                      <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center mr-4 shadow-inner">
-                        <svg className="w-7 h-7 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-black text-slate-800 dark:text-white truncate uppercase tracking-tight">{selectedFile.file.name}</p>
-                        <p className="text-[9px] text-indigo-500 font-black tracking-[0.2em] mt-0.5">SYNCED & READY</p>
-                      </div>
-                      <button type="button" onClick={removeFile} className="p-2 text-slate-300 hover:text-red-500 transition-premium hover:rotate-90">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="relative">
-                    <textarea
-                      value={input}
-                      onChange={(e) => {
-                        setInput(e.target.value);
-                        e.target.style.height = 'auto';
-                        e.target.style.height = `${Math.min(e.target.scrollHeight, 180)}px`;
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          if (input.trim() || selectedFile) handleCommand(e as any);
-                        }
-                      }}
-                      placeholder="Brainstorm with Zen AI..."
-                      className="w-full pl-8 pr-24 py-6 bg-white dark:bg-slate-900/80 border border-transparent focus:border-indigo-500/20 rounded-[2.5rem] text-sm font-bold transition-premium placeholder:text-slate-500 outline-none shadow-2xl shadow-indigo-900/10 resize-none custom-scrollbar min-h-[0px] leading-relaxed block backdrop-blur-md text-black dark:text-white"
-                      rows={2}
-                      disabled={isLoading}
-                    />
-
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="p-3 text-slate-600 dark:text-slate-400 hover:text-indigo-600 transition-premium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
-                      </button>
-                      <button type="submit" disabled={isLoading || (!input.trim() && !selectedFile)} className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-4 rounded-[1.25rem] hover:scale-110 active:scale-90 transition-premium disabled:opacity-30 disabled:hover:scale-100 shadow-2xl shadow-indigo-500/20">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </section>
         </div>
-      </main >
-
-      <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,application/pdf,text/plain" />
-    </div >
+      </main>
+    </div>
   );
 };
 
