@@ -13,6 +13,32 @@ export interface Installment {
   data?: string;
 }
 
+// Category System
+export interface Category {
+  id: string;
+  nome: string;
+  tipo: 'system' | 'custom';
+  fixa: boolean;
+  icone: string;
+  cor: string;
+  ordem: number;
+  ativa: boolean;
+  descricao?: string;
+  criada_em: any; // Timestamp
+  criada_por: 'system' | string;
+}
+
+export interface Subcategory {
+  id: string;
+  categoria_id: string;
+  nome: string;
+  icone?: string;
+  cor?: string;
+  ordem: number;
+  ativa: boolean;
+  descricao?: string;
+}
+
 export interface PaymentData {
   status: PaymentStatus;
   tipo: PaymentType;
