@@ -42,7 +42,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
             setValue(existingTask.value || '');
             // Date handling would go here (converting Timestamp to string)
         }
-    }, [existingTask]);
+    }, [existingTask, userId]); // Added userId
 
     useEffect(() => {
         if (categoriaId) {
@@ -53,11 +53,15 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
     }, [categoriaId]);
 
     const loadCategories = async () => {
-        const data = await fetchCategories(userId);
-        setCategories(data);
-        // Auto-select first if new
-        if (!existingTask && data.length > 0 && !categoriaId) {
-            setCategoriaId(data[0].id);
+        try {
+            const data = await fetchCategories(userId);
+            setCategories(data);
+            // Auto-select first if new and categories exist
+            if (!existingTask && data.length > 0 && !categoriaId) {
+                setCategoriaId(data[0].id);
+            }
+        } catch (error) {
+            console.error("Failed to load categories in form", error);
         }
     };
 

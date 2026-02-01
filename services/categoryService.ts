@@ -38,7 +38,7 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
 
     const q = query(
         collection(db, COLLECTION_CATS),
-        where('criada_por', 'in', ['system', userId]),
+        where('criada_por', '==', userId),
         orderBy('ordem', 'asc')
     );
 
