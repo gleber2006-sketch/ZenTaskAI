@@ -18,6 +18,7 @@ import { Category, Subcategory } from '../types';
 const COLLECTION_CATS = 'categories';
 const COLLECTION_SUBCATS = 'subcategories';
 
+
 export const SYSTEM_CATEGORIES = [
     { nome: 'Trabalho', icone: '💼', cor: 'bg-blue-500' },
     { nome: 'Estudos', icone: '📚', cor: 'bg-purple-500' },
@@ -27,6 +28,59 @@ export const SYSTEM_CATEGORIES = [
     { nome: 'Saúde', icone: '❤️', cor: 'bg-red-500' },
     { nome: 'Rotina', icone: '🔄', cor: 'bg-slate-500' },
 ];
+
+// Subcategories mapped to parent category names
+export const SYSTEM_SUBCATEGORIES: Record<string, string[]> = {
+    'Trabalho': [
+        'Tarefas operacionais',
+        'Reuniões',
+        'Demandas urgentes',
+        'Planejamento',
+        'Follow-ups'
+    ],
+    'Estudos': [
+        'Aulas',
+        'Leituras',
+        'Exercícios',
+        'Projetos acadêmicos',
+        'Revisões'
+    ],
+    'Pessoal': [
+        'Família',
+        'Social',
+        'Lazer',
+        'Casa',
+        'Compromissos'
+    ],
+    'Financeiro': [
+        'Contas a pagar',
+        'Contas a receber',
+        'Planejamento financeiro',
+        'Investimentos',
+        'Orçamento'
+    ],
+    'Projetos': [
+        'Projetos ativos',
+        'Projetos pausados',
+        'Projetos finalizados',
+        'Ideias',
+        'Backlog'
+    ],
+    'Saúde': [
+        'Treinos',
+        'Consultas',
+        'Hábitos',
+        'Rotina alimentar',
+        'Bem-estar'
+    ],
+    'Rotina': [
+        'Manhã',
+        'Tarde',
+        'Noite',
+        'Semanal',
+        'Mensal'
+    ]
+};
 
 // --- Categories ---
 
@@ -60,7 +114,7 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
     // Then the user owns the record but is blocked from changing title/type.
 
     if (categories.length === 0) {
-        await seedCategories(userId);
+        await seedCategoriesAndSubcategories(userId);
         // Refetch
         const retrySnapshot = await getDocs(q);
         categories = retrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
@@ -69,11 +123,15 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
     return categories;
 };
 
-export const seedCategories = async (userId: string) => {
+export const seedCategoriesAndSubcategories = async (userId: string) => {
     const batch = writeBatch(db);
+    const categoryIdMap: Record<string, string> = {};
 
+    // Create categories
     SYSTEM_CATEGORIES.forEach((cat, index) => {
         const docRef = doc(collection(db, COLLECTION_CATS));
+        categoryIdMap[cat.nome] = docRef.id;
+
         batch.set(docRef, {
             nome: cat.nome,
             tipo: 'system',
@@ -83,7 +141,23 @@ export const seedCategories = async (userId: string) => {
             ordem: index,
             ativa: true,
             criada_em: Timestamp.now(),
-            criada_por: userId // User owns the record locally so they can hide/order, but Type locks it.
+            criada_por: userId
+        });
+    });
+
+    // Create subcategories
+    Object.entries(SYSTEM_SUBCATEGORIES).forEach(([categoryName, subcats]) => {
+        const categoryId = categoryIdMap[categoryName];
+        if (!categoryId) return;
+
+        subcats.forEach((subName, index) => {
+            const subDocRef = doc(collection(db, COLLECTION_SUBCATS));
+            batch.set(subDocRef, {
+                categoria_id: categoryId,
+                nome: subName,
+                ordem: index,
+                ativa: true
+            });
         });
     });
 

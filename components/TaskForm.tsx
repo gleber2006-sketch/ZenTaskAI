@@ -146,14 +146,15 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                         {/* Grid 1: Category & Sub */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Categoria</label>
+                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Categoria *</label>
                                 <select
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white"
+                                    required
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white focus:ring-2 focus:ring-indigo-500"
                                     value={categoriaId}
                                     onChange={e => setCategoriaId(e.target.value)}
                                 >
                                     <option value="" disabled>Selecione...</option>
-                                    {categories.map(cat => (
+                                    {categories.filter(c => c.ativa).map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.icone} {cat.nome}</option>
                                     ))}
                                 </select>
@@ -161,13 +162,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                             <div>
                                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Subcategoria</label>
                                 <select
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                     value={subcategoriaId}
                                     onChange={e => setSubcategoriaId(e.target.value)}
-                                    disabled={subcategories.length === 0}
+                                    disabled={!categoriaId || subcategories.length === 0}
                                 >
-                                    <option value="">Nenhuma</option>
-                                    {subcategories.map(sub => (
+                                    <option value="">{subcategories.length === 0 ? 'Nenhuma disponível' : 'Nenhuma'}</option>
+                                    {subcategories.filter(s => s.ativa).map(sub => (
                                         <option key={sub.id} value={sub.id}>{sub.nome}</option>
                                     ))}
                                 </select>
