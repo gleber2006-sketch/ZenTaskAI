@@ -9,8 +9,7 @@ import {
     where,
     getDocs,
     Timestamp,
-    writeBatch,
-    orderBy
+    writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Category, Subcategory } from '../types';
@@ -85,83 +84,106 @@ export const SYSTEM_SUBCATEGORIES: Record<string, string[]> = {
 // --- Categories ---
 
 export const fetchCategories = async (userId: string): Promise<Category[]> => {
-    // Fetch both 'system' (created_por == system) AND 'custom' (created_por == userId)
-    // Actually, seeding creates system cats per user or globally?
-    // Usually system cats are global but here distinct per user to allow ordering/hiding.
-    // We will seed them FOR THE USER.
+    try {
+        console.log('🔍 Fetching categories for user:', userId);
 
-    const q = query(
-        collection(db, COLLECTION_CATS),
-        where('criada_por', '==', userId),
-        orderBy('ordem', 'asc')
-    );
+        // Query without orderBy to avoid composite index requirement
+        const q = query(
+            collection(db, COLLECTION_CATS),
+            where('criada_por', '==', userId)
+        );
 
-    const snapshot = await getDocs(q);
-    let categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+        const snapshot = await getDocs(q);
+        let categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
 
-    // Auto-seed if empty for this user
-    // This is a simplified check. A robust one checks if 'system' cats exist for this user?
-    // Or if 'system' cats are shared? 
-    // Let's assume we create COPIES for each user so they can hide/order them.
-    // Wait, the prompt says "criada_por (user_id | system)".
-    // If 'system', it implies a shared record? 
-    // "Categorias do tipo system: ... podem ser ocultadas (ativa = false), podem ser reordenadas".
-    // If they are shared records, one user reordering affects updated?
-    // NO. 
-    // Approach: System categories are created with 'criada_por = userId' but 'tipo = system'?
-    // OR 'criada_por = system' and we store user preferences separately?
-    // The simplest "SaaS" way is: Seed default categories into the user's collection with 'tipo: system'.
-    // Then the user owns the record but is blocked from changing title/type.
+        console.log(`📁 Found ${categories.length} existing categories`);
 
-    if (categories.length === 0) {
-        await seedCategoriesAndSubcategories(userId);
-        // Refetch
-        const retrySnapshot = await getDocs(q);
-        categories = retrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+        // Auto-seed if empty for this user
+        if (categories.length === 0) {
+            console.log('🌱 No categories found, starting seed process...');
+            await seedCategoriesAndSubcategories(userId);
+
+            // Refetch after seeding
+            const retrySnapshot = await getDocs(q);
+            categories = retrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+            console.log(`✅ After seeding: ${categories.length} categories`);
+        }
+
+        // Sort client-side by ordem
+        categories.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+        return categories;
+    } catch (error) {
+        console.error('❌ Error in fetchCategories:', error);
+        throw error;
     }
-
-    return categories;
 };
 
 export const seedCategoriesAndSubcategories = async (userId: string) => {
-    const batch = writeBatch(db);
-    const categoryIdMap: Record<string, string> = {};
+    try {
+        console.log('🌱 Starting seed process...');
+        console.log(`👤 User ID: ${userId}`);
 
-    // Create categories
-    SYSTEM_CATEGORIES.forEach((cat, index) => {
-        const docRef = doc(collection(db, COLLECTION_CATS));
-        categoryIdMap[cat.nome] = docRef.id;
+        const batch = writeBatch(db);
+        const categoryIdMap: Record<string, string> = {};
 
-        batch.set(docRef, {
-            nome: cat.nome,
-            tipo: 'system',
-            fixa: true,
-            icone: cat.icone,
-            cor: cat.cor,
-            ordem: index,
-            ativa: true,
-            criada_em: Timestamp.now(),
-            criada_por: userId
-        });
-    });
+        // Create categories
+        console.log('📁 Creating categories...');
+        SYSTEM_CATEGORIES.forEach((cat, index) => {
+            const docRef = doc(collection(db, COLLECTION_CATS));
+            categoryIdMap[cat.nome] = docRef.id;
 
-    // Create subcategories
-    Object.entries(SYSTEM_SUBCATEGORIES).forEach(([categoryName, subcats]) => {
-        const categoryId = categoryIdMap[categoryName];
-        if (!categoryId) return;
-
-        subcats.forEach((subName, index) => {
-            const subDocRef = doc(collection(db, COLLECTION_SUBCATS));
-            batch.set(subDocRef, {
-                categoria_id: categoryId,
-                nome: subName,
+            batch.set(docRef, {
+                nome: cat.nome,
+                tipo: 'system',
+                fixa: true,
+                icone: cat.icone,
+                cor: cat.cor,
                 ordem: index,
-                ativa: true
+                ativa: true,
+                criada_em: Timestamp.now(),
+                criada_por: userId
             });
-        });
-    });
 
-    await batch.commit();
+            console.log(`  ✅ ${cat.icone} ${cat.nome} (ID: ${docRef.id.substring(0, 8)}...)`);
+        });
+
+        // Create subcategories
+        console.log('📂 Creating subcategories...');
+        let subCount = 0;
+        Object.entries(SYSTEM_SUBCATEGORIES).forEach(([categoryName, subcats]) => {
+            const categoryId = categoryIdMap[categoryName];
+            if (!categoryId) {
+                console.warn(`⚠️  Category "${categoryName}" not found in map, skipping subcats`);
+                return;
+            }
+
+            subcats.forEach((subName, index) => {
+                const subDocRef = doc(collection(db, COLLECTION_SUBCATS));
+                batch.set(subDocRef, {
+                    categoria_id: categoryId,
+                    nome: subName,
+                    ordem: index,
+                    ativa: true
+                });
+                subCount++;
+            });
+
+            console.log(`  ✅ ${categoryName}: ${subcats.length} subcategorias`);
+        });
+
+        console.log('💾 Committing batch write to Firestore...');
+        await batch.commit();
+
+        console.log(`✅ Seed complete!`);
+        console.log(`   📁 Categories created: ${SYSTEM_CATEGORIES.length}`);
+        console.log(`   📂 Subcategories created: ${subCount}`);
+        console.log(`   💾 Total documents: ${SYSTEM_CATEGORIES.length + subCount}`);
+
+    } catch (error) {
+        console.error('❌ Error in seedCategoriesAndSubcategories:', error);
+        throw error;
+    }
 };
 
 export const createCategory = async (userId: string, data: Partial<Category>) => {
@@ -194,13 +216,24 @@ export const deleteCategory = async (id: string, type: 'system' | 'custom') => {
 // --- Subcategories ---
 
 export const fetchSubcategories = async (categoryId: string): Promise<Subcategory[]> => {
-    const q = query(
-        collection(db, COLLECTION_SUBCATS),
-        where('categoria_id', '==', categoryId),
-        orderBy('ordem', 'asc')
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subcategory));
+    try {
+        // Query without orderBy initially to avoid index issues
+        const q = query(
+            collection(db, COLLECTION_SUBCATS),
+            where('categoria_id', '==', categoryId)
+        );
+
+        const snapshot = await getDocs(q);
+        const subcategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subcategory));
+
+        // Sort client-side
+        subcategories.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+        return subcategories;
+    } catch (error) {
+        console.error('❌ Error fetching subcategories:', error);
+        throw error;
+    }
 };
 
 export const createSubcategory = async (categoryId: string, data: Partial<Subcategory>) => {
