@@ -308,17 +308,24 @@ const App: React.FC = () => {
               </button>
               <button
                 onClick={async () => {
-                  if (window.confirm("⚠️ Restaurar categorias originais? Isso apagará as customizadas e recriará Financeiro, Comercial, Parceiros, etc.")) {
+                  if (window.confirm("🛠️ Estabilizar Sistema? Isso vai recuperar vínculos de tarefas e garantir que as categorias originais estejam corretas, SEM apagar seus dados.")) {
                     setIsLoading(true);
-                    await forceResetCategories(user!.uid);
-                    await loadData(user!.uid);
-                    alert("✅ Categorias restauradas!");
+                    try {
+                      await forceResetCategories(user!.uid);
+                      await loadData(user!.uid);
+                      alert("✅ Sistema estabilizado e categorias recuperadas!");
+                    } catch (e) {
+                      console.error(e);
+                      alert("❌ Falha na estabilização.");
+                    } finally {
+                      setIsLoading(false);
+                    }
                   }
                 }}
-                className="text-red-400 hover:text-red-300 transition"
-                title="Restaurar Padrão Original"
+                className="text-indigo-400 hover:text-indigo-300 transition"
+                title="Estabilizar e Recuperar Sistema"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               </button>
               <button
                 onClick={() => setShowCategoryManager(true)}

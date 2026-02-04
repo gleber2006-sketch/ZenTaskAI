@@ -122,71 +122,110 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
     }
 };
 
+// Seeding non-destructive: apenas cria se não existir por nome
 export const seedCategoriesAndSubcategories = async (userId: string) => {
     try {
-        console.log('🌱 Starting seed process...');
-        console.log(`👤 User ID: ${userId}`);
-
+        console.log('🌱 Starting non-destructive seed process...');
+        const currentCats = await fetchCategories(userId);
         const batch = writeBatch(db);
         const categoryIdMap: Record<string, string> = {};
 
-        // Create categories
-        console.log('📁 Creating categories...');
-        SYSTEM_CATEGORIES.forEach((cat, index) => {
-            const docRef = doc(collection(db, COLLECTION_CATS));
-            categoryIdMap[cat.nome] = docRef.id;
+        // 1. Create/Map categories
+        for (let index = 0; index < SYSTEM_CATEGORIES.length; index++) {
+            const cat = SYSTEM_CATEGORIES[index];
+            const existing = currentCats.find(c => c.nome.toLowerCase() === cat.nome.toLowerCase());
 
-            batch.set(docRef, {
-                nome: cat.nome,
-                tipo: 'system',
-                fixa: true,
-                icone: cat.icone,
-                cor: cat.cor,
-                ordem: index,
-                ativa: true,
-                criada_em: Timestamp.now(),
-                criada_por: userId
-            });
-
-            console.log(`  ✅ ${cat.icone} ${cat.nome} (ID: ${docRef.id.substring(0, 8)}...)`);
-        });
-
-        // Create subcategories
-        console.log('📂 Creating subcategories...');
-        let subCount = 0;
-        Object.entries(SYSTEM_SUBCATEGORIES).forEach(([categoryName, subcats]) => {
-            const categoryId = categoryIdMap[categoryName];
-            if (!categoryId) {
-                console.warn(`⚠️  Category "${categoryName}" not found in map, skipping subcats`);
-                return;
-            }
-
-            subcats.forEach((subName, index) => {
-                const subDocRef = doc(collection(db, COLLECTION_SUBCATS));
-                batch.set(subDocRef, {
-                    categoria_id: categoryId,
-                    nome: subName,
+            if (existing) {
+                categoryIdMap[cat.nome] = existing.id;
+                // Update properties to match system standard
+                batch.update(doc(db, COLLECTION_CATS, existing.id), {
+                    icone: cat.icone,
+                    cor: cat.cor,
                     ordem: index,
-                    ativa: true
+                    fixa: true,
+                    tipo: 'system'
                 });
-                subCount++;
-            });
+            } else {
+                const docRef = doc(collection(db, COLLECTION_CATS));
+                categoryIdMap[cat.nome] = docRef.id;
+                batch.set(docRef, {
+                    nome: cat.nome,
+                    tipo: 'system',
+                    fixa: true,
+                    icone: cat.icone,
+                    cor: cat.cor,
+                    ordem: index,
+                    ativa: true,
+                    criada_em: Timestamp.now(),
+                    criada_por: userId
+                });
+            }
+        }
 
-            console.log(`  ✅ ${categoryName}: ${subcats.length} subcategorias`);
-        });
-
-        console.log('💾 Committing batch write to Firestore...');
         await batch.commit();
 
-        console.log(`✅ Seed complete!`);
-        console.log(`   📁 Categories created: ${SYSTEM_CATEGORIES.length}`);
-        console.log(`   📂 Subcategories created: ${subCount}`);
-        console.log(`   💾 Total documents: ${SYSTEM_CATEGORIES.length + subCount}`);
+        // 2. Create/Sync subcategories
+        await syncSystemSubcategories(userId);
 
+        // 3. REPAIR task links immediately after seeding
+        await repairTaskCategoryLinks(userId);
+
+        console.log(`✅ Seed/Sync complete!`);
     } catch (error) {
         console.error('❌ Error in seedCategoriesAndSubcategories:', error);
         throw error;
     }
+};
+
+/**
+ * REPAIR FUNCTION: Percorre todas as tarefas e reconecta categoria_id/subcategoria_id quebrados
+ * baseando-se no backup de nomes (se disponível) ou associações órfãs.
+ */
+export const repairTaskCategoryLinks = async (userId: string) => {
+    console.log('🔧 Iniciando reparo de vínculos de tarefas...');
+
+    // 1. Pega estado atual de categorias e subcategorias
+    const cats = await fetchCategories(userId);
+    const subcats: Subcategory[] = [];
+    for (const cat of cats) {
+        const subs = await fetchSubcategories(cat.id);
+        subcats.push(...subs);
+    }
+
+    // 2. Busca todas as tarefas
+    const { fetchTasks, updateTask } = await import('./taskService');
+    const tasks = await fetchTasks(userId);
+
+    for (const task of tasks) {
+        let needsUpdate = false;
+        const updates: any = {};
+
+        // Verifica se categoria_id ainda é válido
+        const catExists = cats.some(c => c.id === task.categoria_id);
+        if (!catExists) {
+            // Tenta encontrar por nome (se tivéssemos o nome salvo na task seria ideal, 
+            // mas como não temos, vamos tentar associar ao 'Pessoal' se for órfã ou 'Trabalho')
+            const defaultCat = cats.find(c => c.nome === 'Pessoal') || cats[0];
+            if (defaultCat) {
+                updates.categoria_id = defaultCat.id;
+                needsUpdate = true;
+            }
+        }
+
+        // Verifica subcategoria
+        if (task.subcategoria_id) {
+            const subExists = subcats.some(s => s.id === task.subcategoria_id);
+            if (!subExists) {
+                updates.subcategoria_id = null;
+                needsUpdate = true;
+            }
+        }
+
+        if (needsUpdate) {
+            await updateTask(task.id, updates);
+        }
+    }
+    console.log('✅ Reparo concluído.');
 };
 
 export const syncSystemSubcategories = async (userId: string) => {
@@ -312,32 +351,11 @@ export const deleteSubcategory = async (id: string) => {
 };
 
 /**
- * Reseta as categorias do usuário para o padrão de sistema original.
- * ATENÇÃO: Isso pode duplicar se não houver cuidado, mas aqui faremos uma limpeza proativa.
+ * Estabiliza e recupera a integridade do sistema sem apagar dados.
  */
 export const forceResetCategories = async (userId: string) => {
-    console.log('🧹 Iniciando reset forçado de categorias para:', userId);
-
-    // 1. Busca categorias atuais
-    const q = query(collection(db, COLLECTION_CATS), where('criada_por', '==', userId));
-    const snapshot = await getDocs(q);
-
-    const batch = writeBatch(db);
-
-    // 2. Remove categorias e subcategorias antigas (opcional, mas aqui faremos para 're-criar' do zero)
-    for (const d of snapshot.docs) {
-        // Remove subcategorias vinculadas
-        const subQ = query(collection(db, COLLECTION_SUBCATS), where('categoria_id', '==', d.id));
-        const subSnap = await getDocs(subQ);
-        subSnap.docs.forEach(sd => batch.delete(sd.ref));
-
-        // Remove a categoria
-        batch.delete(d.ref);
-    }
-
-    await batch.commit();
-
-    // 3. Roda o seed novamente
+    console.log('🛠️ Iniciando estabilização forçada para:', userId);
+    // Em vez de deletar, apenas garantimos que o padrão do sistema está correto
     await seedCategoriesAndSubcategories(userId);
-    console.log('✅ Reset de categorias concluído com sucesso.');
+    console.log('✅ Sistema estabilizado.');
 };
