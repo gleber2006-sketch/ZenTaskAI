@@ -42,9 +42,63 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
     e.stopPropagation();
     if (onToggleStatus) {
       onToggleStatus(task);
-    } else {
-      // Default optimistic update could happen here or parent
     }
+  };
+
+  const handleToggleChecklistItem = async (index: number, currentState: boolean) => {
+    if (!task.descricao) return;
+
+    const lines = task.descricao.split('\n');
+    let checkboxCount = 0;
+    const newLines = lines.map(line => {
+      if (line.trim().startsWith('- [ ]') || line.trim().startsWith('- [x]')) {
+        if (checkboxCount === index) {
+          checkboxCount++;
+          return line.replace(currentState ? '- [x]' : '- [ ]', currentState ? '- [ ]' : '- [x]');
+        }
+        checkboxCount++;
+      }
+      return line;
+    });
+
+    try {
+      const { updateTask } = await import('../services/taskService');
+      await updateTask(task.id, { descricao: newLines.join('\n') });
+      // Parent state update will be handled by the successful response/listener
+    } catch (error) {
+      console.error("Error updating checklist item", error);
+    }
+  };
+
+  const renderDescriptionWithCheckboxes = (text: string) => {
+    const lines = text.split('\n');
+    let checkboxIndex = 0;
+
+    return lines.map((line, i) => {
+      const isUnchecked = line.trim().startsWith('- [ ]');
+      const isChecked = line.trim().startsWith('- [x]');
+
+      if (isUnchecked || isChecked) {
+        const currentIndex = checkboxIndex++;
+        const content = line.replace(isUnchecked ? '- [ ]' : '- [x]', '').trim();
+
+        return (
+          <div
+            key={i}
+            className="flex items-center gap-2 py-1 group/item cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); handleToggleChecklistItem(currentIndex, isChecked); }}
+          >
+            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 dark:border-slate-600 group-hover/item:border-indigo-400'}`}>
+              {isChecked && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+            </div>
+            <span className={`text-sm ${isChecked ? 'text-slate-400 line-through' : 'text-slate-600 dark:text-slate-300'}`}>
+              {content || "(Vazio)"}
+            </span>
+          </div>
+        );
+      }
+      return <p key={i} className="text-sm text-slate-600 dark:text-slate-400 py-0.5">{line}</p>;
+    });
   };
 
   const priorityColors = {
@@ -132,9 +186,12 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
         <div className="px-12 pb-4 pt-0 cursor-default">
           <div className="flex flex-col gap-3">
             {task.descricao && (
-              <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap leading-relaxed bg-slate-50 dark:bg-slate-900/50 p-3 rounded-md border border-slate-100 dark:border-slate-800/50">
-                {task.descricao}
-              </p>
+              <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-md border border-slate-100 dark:border-slate-800/50">
+                {subcategory?.nome === 'Compras'
+                  ? renderDescriptionWithCheckboxes(task.descricao)
+                  : <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap leading-relaxed">{task.descricao}</p>
+                }
+              </div>
             )}
 
             <div className="flex items-center gap-3 pt-2">

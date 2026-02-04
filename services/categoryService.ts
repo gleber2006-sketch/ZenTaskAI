@@ -45,6 +45,7 @@ export const SYSTEM_SUBCATEGORIES: Record<string, string[]> = {
         'Follow-up'
     ],
     'Pessoal': [
+        'Compras',
         'Família',
         'Social',
         'Lazer',
