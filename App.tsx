@@ -344,6 +344,38 @@ const App: React.FC = () => {
               })}
             </div>
 
+            {/* Quick Add Manual Task */}
+            <div className="mb-6">
+              <div className="relative group">
+                <input
+                  type="text"
+                  placeholder="Adicionar tarefa rápida... (Enter)"
+                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+                  onKeyDown={async (e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      const title = e.currentTarget.value.trim();
+                      e.currentTarget.value = '';
+                      try {
+                        const { createTask } = await import('./services/taskService');
+                        await createTask(user!.uid, {
+                          titulo: title,
+                          categoria_id: activeCategory === 'Tudo' ? (categories[0]?.id || '') : activeCategory,
+                          prioridade: 'media',
+                          status: 'pendente'
+                        });
+                        loadData(user!.uid);
+                      } catch (err) {
+                        console.error(err);
+                      }
+                    }
+                  }}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                </div>
+              </div>
+            </div>
+
             {filteredTasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8 opacity-40">
                 <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 border border-gray-100 dark:border-slate-700">
