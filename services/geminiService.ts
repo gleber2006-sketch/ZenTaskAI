@@ -2,17 +2,32 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ActionType, AIResponse, Task } from "../types";
 
-// Tenta obter a chave de múltiplas fontes (Vite e Node process)
-const GEMINI_KEY =
-  (import.meta as any).env?.VITE_GEMINI_API_KEY ||
-  process.env?.GEMINI_API_KEY ||
-  process.env?.API_KEY ||
-  "";
+// Tenta obter a chave de múltiplas fontes com segurança para navegador
+const getEnvKey = () => {
+  try {
+    if ((import.meta as any).env?.VITE_GEMINI_API_KEY) return (import.meta as any).env.VITE_GEMINI_API_KEY;
+    if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+    if (typeof process !== 'undefined' && process.env?.API_KEY) return process.env.API_KEY;
+  } catch (e) {
+    console.warn("Acesso ao ambiente restrito:", e);
+  }
+  return "";
+};
 
-const ai = new GoogleGenAI({ apiKey: GEMINI_KEY });
-if (!GEMINI_KEY) {
-  console.error("ZenTask AI: Gemini API Key não encontrada!");
-}
+const GEMINI_KEY = getEnvKey();
+console.log(`🤖 Status da Chave Gemini: ${GEMINI_KEY ? 'Configurada' : 'AUSENTE'}`);
+
+let genAI: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (!genAI) {
+    if (!GEMINI_KEY) {
+      throw new Error("API key must be set when using the Gemini API. Verifique as variáveis de ambiente.");
+    }
+    genAI = new GoogleGenAI({ apiKey: GEMINI_KEY });
+  }
+  return genAI;
+};
 
 export interface FilePart {
   mimeType: string;
@@ -51,6 +66,7 @@ Confirm quantity and category in chat.
 Context: ${taskListContext}`;
 
   try {
+    const ai = getAI();
     const parts: any[] = [{ text: userInput || "Analyze and extract tasks." }];
 
     if (filePart) {

@@ -108,11 +108,21 @@ const App: React.FC = () => {
     setShowTaskForm(true);
   };
 
+  const handleToggleStatus = async (task: Task) => {
+    try {
+      await toggleTaskStatus(task);
+      const newStatus: TaskStatus = task.status === 'concluida' ? 'pendente' : 'concluida';
+      setTasks(tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
+    } catch (e) { console.error("Erro ao alternar status:", e); }
+  };
+
   const handleDeleteTask = async (id: string) => {
     try {
+      console.log(`🗑️ Excluindo tarefa: ${id}`);
       await deleteTask(id);
       setTasks(tasks.filter(t => t.id !== id));
-    } catch (e) { console.error(e); }
+      console.log(`✅ Tarefa ${id} excluída.`);
+    } catch (e) { console.error("Erro ao excluir tarefa:", e); }
   };
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -356,16 +366,19 @@ const App: React.FC = () => {
                       const title = e.currentTarget.value.trim();
                       e.currentTarget.value = '';
                       try {
+                        console.log(`➕ Adicionando tarefa manual: ${title}`);
                         const { createTask } = await import('./services/taskService');
-                        await createTask(user!.uid, {
+                        const result = await createTask(user!.uid, {
                           titulo: title,
                           categoria_id: activeCategory === 'Tudo' ? (categories[0]?.id || '') : activeCategory,
                           prioridade: 'media',
                           status: 'pendente'
                         });
+                        console.log('✅ Tarefa salva no Firestore:', result.id);
                         loadData(user!.uid);
                       } catch (err) {
-                        console.error(err);
+                        console.error('❌ Erro ao salvar tarefa manual:', err);
+                        alert(`Erro ao salvar: ${err instanceof Error ? err.message : 'Verifique sua conexão'}`);
                       }
                     }
                   }}
@@ -392,7 +405,7 @@ const App: React.FC = () => {
                     categories={categories}
                     onEdit={handleEditTask}
                     onDelete={handleDeleteTask}
-                    onToggleStatus={toggleTaskStatus}
+                    onToggleStatus={handleToggleStatus}
                   />
                 ))}
               </div>

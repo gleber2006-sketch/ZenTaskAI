@@ -35,18 +35,27 @@ export const fetchTasks = async (userId: string, filters: TaskFilters = {}): Pro
 
     let q = query(
         collection(db, COLLECTION_TASKS),
-        where('userId', '==', userId),
-        orderBy('ordem', 'asc'),
-        orderBy('criada_em', 'desc')
-        // Note: This specific orderBy combo might require an index.
-        // If it fails, we fall back to just userId and sort in memory.
+        where('userId', '==', userId)
+        // Removido orderBy composto para evitar erro de índice no Firestore em produção
     );
+
+    console.log(`📡 Buscando tarefas para o usuário: ${userId}`);
 
     try {
         const snapshot = await getDocs(q);
         let tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+        console.log(`✅ ${tasks.length} tarefas encontradas.`);
 
-        // Client-side Filtering (Flexible & Fast for < 1000 tasks)
+        // Filtro e Ordenação Client-side (Evita necessidade de índices complexos no Firebase)
+        tasks.sort((a, b) => {
+            const ordemA = a.ordem || 0;
+            const ordemB = b.ordem || 0;
+            if (ordemA !== ordemB) return ordemA - ordemB;
+
+            const dataA = (a.criada_em as any)?.seconds || 0;
+            const dataB = (b.criada_em as any)?.seconds || 0;
+            return dataB - dataA;
+        });
         if (filters.status && filters.status.length > 0) {
             tasks = tasks.filter(t => filters.status!.includes(t.status));
         }
