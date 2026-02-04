@@ -27,7 +27,7 @@ export const processTaskCommand = async (
   const model = 'gemini-flash-lite-latest';
 
   const taskListContext = currentTasks.length > 0
-    ? `Tasks: ${currentTasks.map(t => `#${t.id}: ${t.title} (${t.status}, Pago: ${t.pagamento?.status || 'N/A'})`).join(', ')}`
+    ? `Tasks: ${currentTasks.map(t => `#${t.id}: ${t.titulo} (${t.status}, Pago: ${t.pagamento?.status || 'N/A'})`).join(', ')}`
     : "No tasks.";
 
   const systemInstruction = `You are ZenTask AI. Extract business/personal tasks and details.
@@ -39,7 +39,14 @@ export const processTaskCommand = async (
    - Financeiro: fluxo ('Entrada'|'Saída'), tipoFinanceiro ('Fixo'|'Variável'), comprovante.
    - Estudos: materia, topico, linkAula, dataRevisao.
    - Projetos: milestone, stack, repo, sprint.
-3. Base fields (all): title, recurrence, importance, startDate, endDate.
+3. Subcategorize (subcategory field):
+    - Trabalho: Interno, Cliente, Reunião, Design, Dev
+    - Pessoal: Saúde, Lazer, Casa, Família
+    - Clientes: Briefing, Aprovação, Reunião
+    - Financeiro: Receita, Despesa, Investimento
+    - Estudos: Teoria, Prática, Revisão
+    - Projetos: Frontend, Backend, Infra, Docs
+4. Base fields (all): title, recurrence, importance, startDate, endDate.
 Confirm quantity and category in chat.
 Context: ${taskListContext}`;
 
@@ -76,6 +83,7 @@ Context: ${taskListContext}`;
                 properties: {
                   title: { type: Type.STRING },
                   category: { type: Type.STRING, enum: ['Pessoal', 'Trabalho', 'Clientes', 'Financeiro', 'Estudos', 'Projetos'] },
+                  subcategory: { type: Type.STRING },
                   description: { type: Type.STRING },
                   contato: { type: Type.STRING },
                   empresa: { type: Type.STRING },

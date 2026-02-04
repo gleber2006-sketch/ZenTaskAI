@@ -120,6 +120,7 @@ export interface CreatedTaskData {
     parcelas?: Installment[];
   };
   category?: TaskCategory;
+  subcategory?: string;
 
   // Novos campos específicos (Surpresa)
   local?: string;

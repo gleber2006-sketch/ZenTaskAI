@@ -1,18 +1,38 @@
 
 import React, { useState, useEffect } from 'react';
-import { Task, Category } from '../types';
+import { Task, Category, Subcategory } from '../types';
 import { toggleTaskStatus } from '../services/taskService';
+import { fetchSubcategories } from '../services/categoryService';
 
 interface TaskItemProps {
   task: Task;
-  categories: Category[]; // Pass specific category or all? Passing all for lookup is easier for now.
+  categories: Category[];
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
-  onToggleStatus?: (task: Task) => void; // Optional override
+  onToggleStatus?: (task: Task) => void;
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete, onToggleStatus }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [subcategory, setSubcategory] = useState<Subcategory | null>(null);
+
+  useEffect(() => {
+    if (task.subcategoria_id && task.categoria_id) {
+      loadSubcategory();
+    } else {
+      setSubcategory(null);
+    }
+  }, [task.subcategoria_id, task.categoria_id]);
+
+  const loadSubcategory = async () => {
+    try {
+      const subs = await fetchSubcategories(task.categoria_id);
+      const sub = subs.find(s => s.id === task.subcategoria_id);
+      if (sub) setSubcategory(sub);
+    } catch (error) {
+      console.error("Error loading subcategory in TaskItem", error);
+    }
+  };
 
   const isCompleted = task.status === 'concluida';
 
@@ -79,6 +99,11 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
               <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border flex items-center gap-1 ${category.cor.includes('bg-') ? 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500' : ''}`}>
                 <span>{category.icone}</span>
                 <span className="truncate max-w-[80px]">{category.nome}</span>
+              </span>
+            )}
+            {subcategory && (
+              <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border bg-white dark:bg-slate-800 text-gray-400 border-gray-100 dark:border-slate-700">
+                {subcategory.nome}
               </span>
             )}
             {task.prazo && (

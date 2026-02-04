@@ -10,10 +10,12 @@ import {
     getDocs,
     Timestamp,
     orderBy,
-    limit
+    limit,
+    writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Task, TaskStatus, TaskPriority } from '../types';
+import { Task, TaskStatus, TaskPriority, CreatedTaskData } from '../types';
+import { fetchCategories, fetchSubcategories } from './categoryService';
 
 const COLLECTION_TASKS = 'tasks';
 
@@ -115,4 +117,49 @@ export const toggleTaskStatus = async (task: Task) => {
 // Quick Actions
 export const setTaskPriority = async (id: string, prioridade: TaskPriority) => {
     await updateTask(id, { prioridade });
+};
+
+export const createTasksBulk = async (userId: string, taskDataList: CreatedTaskData[]) => {
+    const batch = writeBatch(db);
+
+    // Load categories once
+    const userCategories = await fetchCategories(userId);
+
+    for (const data of taskDataList) {
+        // Find category ID by name (best effort)
+        const matchedCategory = userCategories.find(c =>
+            c.nome.toLowerCase() === (data.category || 'Trabalho').toLowerCase()
+        );
+        const categoria_id = matchedCategory?.id || (userCategories[0]?.id || '');
+
+        // Find subcategory if possible
+        let subcategoria_id = null;
+        if (data.subcategory && matchedCategory) {
+            const subcats = await fetchSubcategories(matchedCategory.id);
+            const matchedSub = subcats.find(s =>
+                s.nome.toLowerCase().includes(data.subcategory!.toLowerCase())
+            );
+            subcategoria_id = matchedSub?.id || null;
+        }
+
+        const newTaskRef = doc(collection(db, COLLECTION_TASKS));
+        batch.set(newTaskRef, {
+            userId,
+            titulo: data.title,
+            descricao: data.description || "",
+            categoria_id,
+            subcategoria_id,
+            prioridade: (data.importance as any) || 'media',
+            status: 'pendente',
+            tipo: 'tarefa',
+            prazo: data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null,
+            ordem: 0,
+            criada_em: Timestamp.now(),
+            atualizada_em: Timestamp.now(),
+            // Map extra fields if they exist in schema
+            value: data.value || null,
+        });
+    }
+
+    await batch.commit();
 };
