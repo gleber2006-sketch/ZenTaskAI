@@ -240,13 +240,24 @@ const App: React.FC = () => {
       {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 dark:bg-slate-950 text-white flex flex-col shrink-0 transition-all z-20 hidden md:flex border-r border-slate-800">
         {/* Brand */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-800">
+        <div className="h-16 flex items-center px-6 border-b border-slate-800 justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm shadow-indigo-500/20">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             </div>
             <span className="font-semibold tracking-tight text-lg text-slate-100">ZenTask Pro</span>
           </div>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-1.5 rounded-md hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            title={darkMode ? "Modo Claro" : "Modo Escuro"}
+          >
+            {darkMode ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            )}
+          </button>
         </div>
 
         {/* Navigation */}
@@ -267,11 +278,29 @@ const App: React.FC = () => {
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Categorias</p>
             <div className="flex items-center gap-2">
               <button
-                onClick={forceReloadCategories}
-                className="text-emerald-500 hover:text-emerald-400 transition"
-                title="Inicializar Categorias"
+                onClick={async () => {
+                  if (!user) return;
+                  try {
+                    const { syncSystemSubcategories } = await import('./services/categoryService');
+                    const count = await syncSystemSubcategories(user.uid);
+                    alert(count > 0 ? `✅ ${count} subcategorias sincronizadas!` : '✅ Sistema já atualizado.');
+                    loadData(user.uid);
+                  } catch (e) {
+                    console.error(e);
+                    alert('❌ Erro na sincronização.');
+                  }
+                }}
+                className="text-indigo-400 hover:text-indigo-300 transition"
+                title="Sincronizar Subcategorias (Corrigir Banco)"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              </button>
+              <button
+                onClick={forceReloadCategories}
+                className="text-emerald-500 hover:text-emerald-400 transition"
+                title="Recarregar Categorias"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               </button>
               <button onClick={() => setShowCategoryManager(true)} className="text-slate-500 hover:text-white transition" title="Gerenciar Categorias">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>

@@ -186,6 +186,47 @@ export const seedCategoriesAndSubcategories = async (userId: string) => {
     }
 };
 
+export const syncSystemSubcategories = async (userId: string) => {
+    try {
+        console.log('🔄 Sincronizando subcategorias do sistema...');
+        const cats = await fetchCategories(userId);
+        const batch = writeBatch(db);
+        let syncCount = 0;
+
+        for (const catName of Object.keys(SYSTEM_SUBCATEGORIES)) {
+            const category = cats.find(c => c.nome === catName);
+            if (!category) continue;
+
+            const existingSubs = await fetchSubcategories(category.id);
+            const systemSubs = SYSTEM_SUBCATEGORIES[catName];
+
+            for (const subName of systemSubs) {
+                if (!existingSubs.some(s => s.nome === subName)) {
+                    const subDocRef = doc(collection(db, COLLECTION_SUBCATS));
+                    batch.set(subDocRef, {
+                        categoria_id: category.id,
+                        nome: subName,
+                        ordem: systemSubs.indexOf(subName),
+                        ativa: true
+                    });
+                    syncCount++;
+                }
+            }
+        }
+
+        if (syncCount > 0) {
+            await batch.commit();
+            console.log(`✅ Sincronização concluída! ${syncCount} novas subcategorias adicionadas.`);
+        } else {
+            console.log('ℹ️ Todas as subcategorias já estão sincronizadas.');
+        }
+        return syncCount;
+    } catch (error) {
+        console.error('❌ Erro na sincronização:', error);
+        throw error;
+    }
+};
+
 export const createCategory = async (userId: string, data: Partial<Category>) => {
     return await addDoc(collection(db, COLLECTION_CATS), {
         ...data,
