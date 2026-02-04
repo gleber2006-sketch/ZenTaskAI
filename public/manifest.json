@@ -1,0 +1,16 @@
+{
+    "name": "ZenTask Pro",
+    "short_name": "ZenTask",
+    "description": "Enterprise-grade task management with AI intelligence.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#020617",
+    "theme_color": "#020617",
+    "icons": [
+        {
+            "src": "/logo_zt.png",
+            "sizes": "1024x1024",
+            "type": "image/png"
+        }
+    ]
+}
