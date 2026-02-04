@@ -141,7 +141,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                             <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Descrição</label>
                             <textarea
                                 className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white min-h-[80px]"
-                                placeholder="Detalhes adicionais..."
+                                placeholder={subcategories.find(s => s.id === subcategoriaId)?.nome?.trim().toLowerCase() === 'compras'
+                                    ? "Dica: Use - [ ] para criar itens com checkbox!"
+                                    : "Detalhes adicionais..."
+                                }
                                 value={descricao}
                                 onChange={e => setDescricao(e.target.value)}
                             />
