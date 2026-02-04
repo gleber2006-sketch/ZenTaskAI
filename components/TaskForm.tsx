@@ -131,32 +131,32 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
 
                 <div className="space-y-2 max-h-[200px] overflow-y-auto no-scrollbar">
                     {checklistItems.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-2 group animate-in slide-in-from-left-2 duration-200">
+                        <div key={idx} className="flex items-center gap-3 group animate-in slide-in-from-left-2 duration-200 py-1.5">
                             <button
                                 type="button"
                                 onClick={() => toggleChecklistItem(idx)}
-                                className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 transition-colors ${item.checked ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'}`}
+                                className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-all ${item.checked ? 'bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-500/20' : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-indigo-400'}`}
                             >
-                                {item.checked && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                                {item.checked && <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
                             </button>
-                            <span className={`text-sm flex-1 truncate ${item.checked ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200 font-medium'}`}>
+                            <span className={`text-sm flex-1 truncate py-1 ${item.checked ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200 font-bold tracking-tight'}`}>
                                 {item.text}
                             </span>
                             <button
                                 type="button"
                                 onClick={() => removeChecklistItem(idx)}
-                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-all"
+                                className="p-3 text-slate-400 hover:text-red-500 transition-all"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
                     ))}
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                     <input
                         type="text"
-                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-sm flex-1 focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
+                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-sm flex-1 focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
                         placeholder="Novo item..."
                         value={newItem}
                         onChange={e => setNewItem(e.target.value)}
@@ -171,9 +171,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                     <button
                         type="button"
                         onClick={() => { addChecklistItem(newItem); setNewItem(''); }}
-                        className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition active:scale-95 shadow-lg shadow-indigo-600/20"
+                        className="w-11 h-11 flex items-center justify-center bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition active:scale-90 shadow-lg shadow-indigo-600/20"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                     </button>
                 </div>
             </div>
@@ -345,15 +345,15 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                     </form>
                 </div>
 
-                <div className="p-5 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
-                    <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition">
+                <div className="p-5 pb-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
+                    <button type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition">
                         Cancelar
                     </button>
                     <button
                         type="submit"
                         form="task-form"
                         disabled={loading}
-                        className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded shadow-md transition disabled:opacity-50"
+                        className="w-full sm:w-auto px-8 py-3 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg shadow-indigo-600/25 transition active:scale-95 disabled:opacity-50"
                     >
                         {loading ? 'Salvando...' : 'Salvar Tarefa'}
                     </button>
