@@ -351,11 +351,87 @@ export const deleteSubcategory = async (id: string) => {
 };
 
 /**
+ * NUCLEAR CLEANUP: Remove duplicatas exatas por nome de categorias e subcategorias.
+ */
+export const deduplicateCategoriesAndSubcategories = async (userId: string) => {
+    console.log('🧹 Iniciando limpeza de duplicatas para:', userId);
+
+    // 1. Limpeza de Categorias
+    const q = query(collection(db, COLLECTION_CATS), where('criada_por', '==', userId));
+    const catSnapshot = await getDocs(q);
+    const catGroups: Record<string, string[]> = {};
+
+    catSnapshot.docs.forEach(d => {
+        const name = d.data().nome.trim().toLowerCase();
+        if (!catGroups[name]) catGroups[name] = [];
+        catGroups[name].push(d.id);
+    });
+
+    const batch = writeBatch(db);
+    let removedCats = 0;
+
+    for (const name in catGroups) {
+        const ids = catGroups[name];
+        if (ids.length > 1) {
+            // Mantém o primeiro, remove os outros
+            const keeper = ids[0];
+            const toRemove = ids.slice(1);
+
+            for (const idToRemove of toRemove) {
+                batch.delete(doc(db, COLLECTION_CATS, idToRemove));
+                removedCats++;
+
+                // Mover tarefas da categoria removida para a que ficou
+                const { repairTaskCategoryLinks } = await import('./categoryService');
+                // Nota: O repairTaskCategoryLinks já reconecta órfãs, 
+                // então deletar aqui vai disparar o repair logo depois.
+            }
+        }
+    }
+
+    // 2. Limpeza de Subcategorias
+    // Buscamos todas as subcategorias do usuário (precisamos buscar por categoria_id)
+    const catsFinal = (await getDocs(q)).docs.map(d => d.id);
+    let removedSubs = 0;
+
+    for (const catId of catsFinal) {
+        const subQ = query(collection(db, COLLECTION_SUBCATS), where('categoria_id', '==', catId));
+        const subSnapshot = await getDocs(subQ);
+        const subGroups: Record<string, string[]> = {};
+
+        subSnapshot.docs.forEach(d => {
+            const name = d.data().nome.trim().toLowerCase();
+            if (!subGroups[name]) subGroups[name] = [];
+            subGroups[name].push(d.id);
+        });
+
+        for (const name in subGroups) {
+            const ids = subGroups[name];
+            if (ids.length > 1) {
+                const toRemove = ids.slice(1);
+                for (const idToRemove of toRemove) {
+                    batch.delete(doc(db, COLLECTION_SUBCATS, idToRemove));
+                    removedSubs++;
+                }
+            }
+        }
+    }
+
+    await batch.commit();
+    console.log(`✅ Limpeza concluída: ${removedCats} categorias e ${removedSubs} subcategorias removidas.`);
+
+    // 3. Repara os vínculos das tarefas
+    await repairTaskCategoryLinks(userId);
+};
+
+/**
  * Estabiliza e recupera a integridade do sistema sem apagar dados.
  */
 export const forceResetCategories = async (userId: string) => {
     console.log('🛠️ Iniciando estabilização forçada para:', userId);
-    // Em vez de deletar, apenas garantimos que o padrão do sistema está correto
+    // Primeiro limpamos a bagunça de duplicatas
+    await deduplicateCategoriesAndSubcategories(userId);
+    // Depois garantimos que o padrão do sistema está correto
     await seedCategoriesAndSubcategories(userId);
     console.log('✅ Sistema estabilizado.');
 };

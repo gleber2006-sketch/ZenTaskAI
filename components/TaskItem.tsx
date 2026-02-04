@@ -187,7 +187,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
           <div className="flex flex-col gap-3">
             {task.descricao && (
               <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-md border border-slate-100 dark:border-slate-800/50">
-                {subcategory?.nome === 'Compras'
+                {subcategory?.nome?.trim().toLowerCase() === 'compras'
                   ? renderDescriptionWithCheckboxes(task.descricao)
                   : <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap leading-relaxed">{task.descricao}</p>
                 }
