@@ -15,6 +15,7 @@ interface TaskItemProps {
 const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete, onToggleStatus }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [subcategory, setSubcategory] = useState<Subcategory | null>(null);
+  const [newItem, setNewItem] = useState('');
 
   useEffect(() => {
     if (task.subcategoria_id && task.categoria_id) {
@@ -64,9 +65,46 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
     try {
       const { updateTask } = await import('../services/taskService');
       await updateTask(task.id, { descricao: newLines.join('\n') });
-      // Parent state update will be handled by the successful response/listener
     } catch (error) {
       console.error("Error updating checklist item", error);
+    }
+  };
+
+  const handleAddChecklistItem = async (itemText: string) => {
+    if (!itemText.trim()) return;
+    const newItemLine = `- [ ] ${itemText.trim()}`;
+    const newDesc = task.descricao ? `${task.descricao}\n${newItemLine}` : newItemLine;
+
+    try {
+      const { updateTask } = await import('../services/taskService');
+      await updateTask(task.id, { descricao: newDesc });
+      setNewItem('');
+    } catch (error) {
+      console.error("Error adding checklist item", error);
+    }
+  };
+
+  const handleDeleteChecklistItem = async (index: number) => {
+    if (!task.descricao) return;
+
+    const lines = task.descricao.split('\n');
+    let checkboxCount = 0;
+    const newLines = lines.filter(line => {
+      if (line.trim().startsWith('- [ ]') || line.trim().startsWith('- [x]')) {
+        if (checkboxCount === index) {
+          checkboxCount++;
+          return false; // Remove this line
+        }
+        checkboxCount++;
+      }
+      return true;
+    });
+
+    try {
+      const { updateTask } = await import('../services/taskService');
+      await updateTask(task.id, { descricao: newLines.join('\n') });
+    } catch (error) {
+      console.error("Error deleting checklist item", error);
     }
   };
 
@@ -85,15 +123,27 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
         return (
           <div
             key={i}
-            className="flex items-center gap-3 py-2.5 group/item cursor-pointer border-b border-white/5 last:border-0"
-            onClick={(e) => { e.stopPropagation(); handleToggleChecklistItem(currentIndex, isChecked); }}
+            className="flex items-center gap-3 py-2.5 group/item border-b border-white/5 last:border-0"
           >
-            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors shadow-sm ${isChecked ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 group-hover/item:border-indigo-400'}`}>
+            <div
+              onClick={(e) => { e.stopPropagation(); handleToggleChecklistItem(currentIndex, isChecked); }}
+              className={`w-5 h-5 rounded border flex items-center justify-center transition-colors shadow-sm cursor-pointer ${isChecked ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 group-hover/item:border-indigo-400'}`}
+            >
               {isChecked && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
             </div>
-            <span className={`text-sm flex-1 ${isChecked ? 'text-slate-400 line-through' : 'text-slate-600 dark:text-slate-300 font-medium'}`}>
+            <span
+              onClick={(e) => { e.stopPropagation(); handleToggleChecklistItem(currentIndex, isChecked); }}
+              className={`text-sm flex-1 cursor-pointer ${isChecked ? 'text-slate-400 line-through' : 'text-slate-600 dark:text-slate-300 font-medium'}`}
+            >
               {content || "(Vazio)"}
             </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleDeleteChecklistItem(currentIndex); }}
+              className="p-2 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover/item:opacity-100"
+              title="Remover item"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
           </div>
         );
       }
@@ -190,7 +240,33 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
             {task.descricao && (
               <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-md border border-slate-100 dark:border-slate-800/50">
                 {subcategory?.nome?.trim().toLowerCase() === 'compras'
-                  ? renderDescriptionWithCheckboxes(task.descricao)
+                  ? (
+                    <>
+                      {renderDescriptionWithCheckboxes(task.descricao)}
+                      {/* Inline Add Button for Compras */}
+                      <div className="flex items-center gap-2 pt-3 mt-1 border-t border-slate-200 dark:border-slate-800">
+                        <input
+                          type="text"
+                          value={newItem}
+                          onChange={(e) => setNewItem(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddChecklistItem(newItem);
+                            }
+                          }}
+                          placeholder="Adicionar item..."
+                          className="flex-1 bg-white dark:bg-slate-800 border-none text-sm py-2 px-3 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none dark:text-white"
+                        />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleAddChecklistItem(newItem); }}
+                          className="w-9 h-9 flex items-center justify-center bg-indigo-600 text-white rounded-lg active:scale-95 shadow-lg shadow-indigo-600/20"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                        </button>
+                      </div>
+                    </>
+                  )
                   : <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap leading-relaxed">{task.descricao}</p>
                 }
               </div>
