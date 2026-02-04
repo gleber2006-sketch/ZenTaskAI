@@ -106,11 +106,22 @@ export const createTask = async (userId: string, data: Partial<Task>) => {
     return await addDoc(collection(db, COLLECTION_TASKS), cleanData);
 };
 
+// Helper to remove undefined or empty values before sending to Firestore
+const cleanPayload = (data: any) => {
+    const clean: any = {};
+    Object.keys(data).forEach(key => {
+        if (data[key] !== undefined) {
+            clean[key] = data[key] === '' ? null : data[key];
+        }
+    });
+    return clean;
+};
+
 export const updateTask = async (id: string, updates: Partial<Task>) => {
-    const payload = {
+    const payload = cleanPayload({
         ...updates,
         atualizada_em: Timestamp.now()
-    };
+    });
     await updateDoc(doc(db, COLLECTION_TASKS, id), payload);
 };
 

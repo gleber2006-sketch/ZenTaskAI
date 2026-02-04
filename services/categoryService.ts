@@ -19,30 +19,30 @@ const COLLECTION_SUBCATS = 'subcategories';
 
 
 export const SYSTEM_CATEGORIES = [
-    { nome: 'Trabalho', icone: '💼', cor: 'bg-blue-500' },
-    { nome: 'Estudos', icone: '📚', cor: 'bg-purple-500' },
-    { nome: 'Pessoal', icone: '👤', cor: 'bg-green-500' },
     { nome: 'Financeiro', icone: '💰', cor: 'bg-emerald-600' },
-    { nome: 'Projetos', icone: '🚀', cor: 'bg-orange-500' },
+    { nome: 'Comercial', icone: '🤝', cor: 'bg-blue-600' },
+    { nome: 'Pessoal', icone: '👤', cor: 'bg-green-500' },
+    { nome: 'Estudos', icone: '📚', cor: 'bg-indigo-500' },
+    { nome: 'Parceiros', icone: '👥', cor: 'bg-orange-500' },
     { nome: 'Saúde', icone: '❤️', cor: 'bg-red-500' },
     { nome: 'Rotina', icone: '🔄', cor: 'bg-slate-500' },
 ];
 
 // Subcategories mapped to parent category names
 export const SYSTEM_SUBCATEGORIES: Record<string, string[]> = {
-    'Trabalho': [
-        'Tarefas operacionais',
-        'Reuniões',
-        'Demandas urgentes',
-        'Planejamento',
-        'Follow-ups'
+    'Financeiro': [
+        'Contas a pagar',
+        'Contas a receber',
+        'Planejamento financeiro',
+        'Investimentos',
+        'Orçamento'
     ],
-    'Estudos': [
-        'Aulas',
-        'Leituras',
-        'Exercícios',
-        'Projetos acadêmicos',
-        'Revisões'
+    'Comercial': [
+        'Vendas',
+        'Contratos',
+        'Prospecção',
+        'Reuniões comerciais',
+        'Follow-up'
     ],
     'Pessoal': [
         'Família',
@@ -51,19 +51,18 @@ export const SYSTEM_SUBCATEGORIES: Record<string, string[]> = {
         'Casa',
         'Compromissos'
     ],
-    'Financeiro': [
-        'Contas a pagar',
-        'Contas a receber',
-        'Planejamento financeiro',
-        'Investimentos',
-        'Orçamento'
+    'Estudos': [
+        'Aulas',
+        'Leituras',
+        'Exercícios',
+        'Projetos acadêmicos',
+        'Revisões'
     ],
-    'Projetos': [
-        'Projetos ativos',
-        'Projetos pausados',
-        'Projetos finalizados',
-        'Ideias',
-        'Backlog'
+    'Parceiros': [
+        'Novos Parceiros',
+        'Manutenção',
+        'Projetos Conjuntos',
+        'Eventos'
     ],
     'Saúde': [
         'Treinos',
@@ -309,4 +308,35 @@ export const createSubcategory = async (categoryId: string, data: Partial<Subcat
 
 export const deleteSubcategory = async (id: string) => {
     await deleteDoc(doc(db, COLLECTION_SUBCATS, id));
+};
+
+/**
+ * Reseta as categorias do usuário para o padrão de sistema original.
+ * ATENÇÃO: Isso pode duplicar se não houver cuidado, mas aqui faremos uma limpeza proativa.
+ */
+export const forceResetCategories = async (userId: string) => {
+    console.log('🧹 Iniciando reset forçado de categorias para:', userId);
+
+    // 1. Busca categorias atuais
+    const q = query(collection(db, COLLECTION_CATS), where('criada_por', '==', userId));
+    const snapshot = await getDocs(q);
+
+    const batch = writeBatch(db);
+
+    // 2. Remove categorias e subcategorias antigas (opcional, mas aqui faremos para 're-criar' do zero)
+    for (const d of snapshot.docs) {
+        // Remove subcategorias vinculadas
+        const subQ = query(collection(db, COLLECTION_SUBCATS), where('categoria_id', '==', d.id));
+        const subSnap = await getDocs(subQ);
+        subSnap.docs.forEach(sd => batch.delete(sd.ref));
+
+        // Remove a categoria
+        batch.delete(d.ref);
+    }
+
+    await batch.commit();
+
+    // 3. Roda o seed novamente
+    await seedCategoriesAndSubcategories(userId);
+    console.log('✅ Reset de categorias concluído com sucesso.');
 };

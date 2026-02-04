@@ -80,14 +80,15 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
         try {
             const taskData: Partial<Task> = {
                 titulo,
-                descricao,
+                descricao: descricao || '',
                 categoria_id: categoriaId,
-                subcategoria_id: subcategoriaId || undefined,
+                subcategoria_id: subcategoriaId || null,
                 prioridade,
                 status,
                 tipo,
-                value: value || undefined, // mapping to legacy field just in case
-                // Prazo logic to be added
+                value: value || null,
+                // Garantir que prazos sejam salvos como null se vazios
+                prazo: prazo ? Timestamp.fromDate(new Date(prazo)) : null,
             };
 
             if (existingTask) {
