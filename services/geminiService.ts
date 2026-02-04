@@ -150,11 +150,31 @@ Context: ${taskListContext}`;
 
     return JSON.parse(response.text || "{}") as AIResponse;
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    const errorMessage = error?.message || "Erro desconhecido";
+    console.error("❌ Erro fatal no Zen Assistant:", error);
+
+    let userFriendlyMsg = "Tive um problema técnico ao processar seu pedido.";
+
+    if (error.message?.includes("API key")) {
+      userFriendlyMsg = "⚠️ Chave da API Gemini não configurada ou inválida. Verifique as variáveis de ambiente.";
+    } else if (error.status === 404 || error.message?.includes("404")) {
+      userFriendlyMsg = "⚠️ Modelo não encontrado. Verifique a configuração de modelo no geminiService.";
+    } else if (error.message?.includes("fetch")) {
+      userFriendlyMsg = "🌐 Erro de conexão. Verifique sua internet.";
+    }
+
     return {
       action: ActionType.UNKNOWN,
-      message: `Erro na IA (${errorMessage}). Verifique se sua chave da API está ativa e se o volume de comandos não excedeu o limite gratuito.`,
+      message: userFriendlyMsg
     };
   }
+};
+
+/**
+ * Verifica se a IA está configurada e pronta para uso
+ */
+export const checkAIStatus = () => {
+  return {
+    configured: !!GEMINI_KEY,
+    keySource: GEMINI_KEY ? "Detectada" : "Ausente"
+  };
 };

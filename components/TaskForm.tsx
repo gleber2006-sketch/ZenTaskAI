@@ -66,8 +66,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
     };
 
     const loadSubcategories = async (catId: string) => {
+        console.log(`📦 TaskForm: Carregando subcategorias para catId: ${catId}`);
         const data = await fetchSubcategories(catId);
         setSubcategories(data);
+        console.log(`📦 TaskForm: ${data.length} subcategorias recebidas.`);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

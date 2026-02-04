@@ -66,15 +66,19 @@ const App: React.FC = () => {
 
   const loadData = async (uid: string) => {
     try {
+      setIsLoading(true);
       const [cats, userTasks] = await Promise.all([
         fetchCategories(uid),
         fetchTasks(uid)
       ]);
       setCategories(cats);
       setTasks(userTasks);
+
+      console.log('✅ Dados carregados com sucesso.');
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("Erro ao carregar dados:", error);
     } finally {
+      setIsLoading(false);
       setLoading(false);
     }
   };
@@ -240,22 +244,22 @@ const App: React.FC = () => {
       {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 dark:bg-slate-950 text-white flex flex-col shrink-0 transition-all z-20 hidden md:flex border-r border-slate-800">
         {/* Brand */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-800 justify-between">
+        <div className="h-16 flex items-center px-6 border-b border-white/5 dark:border-slate-800 justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm shadow-indigo-500/20">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             </div>
-            <span className="font-semibold tracking-tight text-lg text-slate-100">ZenTask Pro</span>
+            <span className="font-bold tracking-tight text-white/90">ZenTask <span className="text-indigo-400">Pro</span></span>
           </div>
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="p-1.5 rounded-md hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-all active:scale-95"
             title={darkMode ? "Modo Claro" : "Modo Escuro"}
           >
             {darkMode ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+              <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
             )}
           </button>
         </div>
@@ -291,9 +295,9 @@ const App: React.FC = () => {
                   }
                 }}
                 className="text-indigo-400 hover:text-indigo-300 transition"
-                title="Sincronizar Subcategorias (Corrigir Banco)"
+                title="Sincronização Proativa (Auto-healing)"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               </button>
               <button
                 onClick={forceReloadCategories}
@@ -418,12 +422,19 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {filteredTasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center p-8 opacity-40">
+            {isLoading && filteredTasks.length === 0 ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-[60px] bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse border border-slate-200/50 dark:border-slate-700/30"></div>
+                ))}
+              </div>
+            ) : filteredTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center opacity-40">
                 <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 border border-gray-100 dark:border-slate-700">
                   <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                 </div>
-                <h3 className="font-semibold text-lg">Sem tarefas</h3>
+                <h3 className="font-semibold text-lg text-slate-400 dark:text-slate-600">Ambiente em paz</h3>
+                <p className="text-xs mt-1">Nenhuma tarefa pendente</p>
               </div>
             ) : (
               <div className="space-y-3">

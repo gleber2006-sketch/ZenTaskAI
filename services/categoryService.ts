@@ -85,9 +85,8 @@ export const SYSTEM_SUBCATEGORIES: Record<string, string[]> = {
 
 export const fetchCategories = async (userId: string): Promise<Category[]> => {
     try {
-        console.log('🔍 Fetching categories for user:', userId);
+        console.log('🔍 Buscando categorias para o usuário:', userId);
 
-        // Query without orderBy to avoid composite index requirement
         const q = query(
             collection(db, COLLECTION_CATS),
             where('criada_por', '==', userId)
@@ -96,25 +95,29 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
         const snapshot = await getDocs(q);
         let categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
 
-        console.log(`📁 Found ${categories.length} existing categories`);
+        console.log(`📁 Encontradas ${categories.length} categorias.`);
 
-        // Auto-seed if empty for this user
+        // Se estiver vazio, gera o seeding inicial
         if (categories.length === 0) {
-            console.log('🌱 No categories found, starting seed process...');
+            console.log('🌱 Primeiro acesso: Gerando categorias e subcategorias...');
             await seedCategoriesAndSubcategories(userId);
-
-            // Refetch after seeding
             const retrySnapshot = await getDocs(q);
             categories = retrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
-            console.log(`✅ After seeding: ${categories.length} categories`);
+        } else {
+            // "AUTO-HEALING": Verifica se faltam subcategorias do sistema (correção proativa)
+            // Fazemos isso em background ou apenas se necessário? Vamos fazer check leve.
+            const needsSync = categories.some(c => c.fixa && c.tipo === 'system');
+            if (needsSync) {
+                // Dispara sincronização silenciosa se alguma categoria de sistema existir
+                // Isso garante que se o usuário deletou subcats ou se falhou no passado, recuperamos.
+                syncSystemSubcategories(userId).catch(e => console.warn("Erro no auto-sync:", e));
+            }
         }
 
-        // Sort client-side by ordem
         categories.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-
         return categories;
     } catch (error) {
-        console.error('❌ Error in fetchCategories:', error);
+        console.error('❌ Erro crítico em fetchCategories:', error);
         throw error;
     }
 };
@@ -188,20 +191,32 @@ export const seedCategoriesAndSubcategories = async (userId: string) => {
 
 export const syncSystemSubcategories = async (userId: string) => {
     try {
-        console.log('🔄 Sincronizando subcategorias do sistema...');
+        console.log('🔄 Iniciando sincronização robusta de subcategorias...');
         const cats = await fetchCategories(userId);
         const batch = writeBatch(db);
         let syncCount = 0;
 
         for (const catName of Object.keys(SYSTEM_SUBCATEGORIES)) {
-            const category = cats.find(c => c.nome === catName);
-            if (!category) continue;
+            // Busca ignorando espaços e case
+            const category = cats.find(c =>
+                c.nome.trim().toLowerCase() === catName.trim().toLowerCase()
+            );
 
+            if (!category) {
+                console.warn(`⚠️ Categoria do sistema "${catName}" não encontrada no banco. Pulando.`);
+                continue;
+            }
+
+            console.log(`📂 Verificando subcategorias para: ${category.nome} (ID: ${category.id})`);
             const existingSubs = await fetchSubcategories(category.id);
             const systemSubs = SYSTEM_SUBCATEGORIES[catName];
 
             for (const subName of systemSubs) {
-                if (!existingSubs.some(s => s.nome === subName)) {
+                const alreadyExists = existingSubs.some(s =>
+                    s.nome.trim().toLowerCase() === subName.trim().toLowerCase()
+                );
+
+                if (!alreadyExists) {
                     const subDocRef = doc(collection(db, COLLECTION_SUBCATS));
                     batch.set(subDocRef, {
                         categoria_id: category.id,
@@ -210,19 +225,21 @@ export const syncSystemSubcategories = async (userId: string) => {
                         ativa: true
                     });
                     syncCount++;
+                    console.log(`  ➕ Adicionando: ${subName}`);
                 }
             }
         }
 
         if (syncCount > 0) {
             await batch.commit();
-            console.log(`✅ Sincronização concluída! ${syncCount} novas subcategorias adicionadas.`);
+            console.log(`✅ Sincronização concluída! ${syncCount} subcategorias adicionadas.`);
+            return syncCount;
         } else {
-            console.log('ℹ️ Todas as subcategorias já estão sincronizadas.');
+            console.log('ℹ️ Nenhuma subcategoria nova para adicionar.');
+            return 0;
         }
-        return syncCount;
     } catch (error) {
-        console.error('❌ Erro na sincronização:', error);
+        console.error('❌ Erro crítico na sincronização:', error);
         throw error;
     }
 };
@@ -258,7 +275,9 @@ export const deleteCategory = async (id: string, type: 'system' | 'custom') => {
 
 export const fetchSubcategories = async (categoryId: string): Promise<Subcategory[]> => {
     try {
-        // Query without orderBy initially to avoid index issues
+        if (!categoryId) return [];
+        console.log(`🔍 Buscando subcategorias para ID: ${categoryId}`);
+
         const q = query(
             collection(db, COLLECTION_SUBCATS),
             where('categoria_id', '==', categoryId)
@@ -266,6 +285,8 @@ export const fetchSubcategories = async (categoryId: string): Promise<Subcategor
 
         const snapshot = await getDocs(q);
         const subcategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subcategory));
+
+        console.log(`  ✅ Encontradas ${subcategories.length} subcategorias.`);
 
         // Sort client-side
         subcategories.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
