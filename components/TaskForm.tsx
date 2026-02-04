@@ -73,6 +73,113 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
         console.log(`📦 TaskForm: ${data.length} subcategorias recebidas.`);
     };
 
+    const [checklistItems, setChecklistItems] = useState<{ text: string, checked: boolean }[]>([]);
+
+    useEffect(() => {
+        if (subcategories.find(s => s.id === subcategoriaId)?.nome?.trim().toLowerCase() === 'compras') {
+            // Parse from description
+            const lines = descricao.split('\n');
+            const items = lines
+                .filter(l => l.trim().startsWith('- [ ]') || l.trim().startsWith('- [x]'))
+                .map(l => ({
+                    text: l.replace('- [ ]', '').replace('- [x]', '').trim(),
+                    checked: l.trim().startsWith('- [x]')
+                }));
+
+            // Only update if current list is empty or if we are switching to Compras
+            // Actually, best to only parse on initial load or category change
+            if (items.length > 0 && checklistItems.length === 0) {
+                setChecklistItems(items);
+            }
+        }
+    }, [subcategoriaId, subcategories]);
+
+    const updateDescriptionFromChecklist = (items: { text: string, checked: boolean }[]) => {
+        const md = items.map(item => `- [${item.checked ? 'x' : ' '}] ${item.text}`).join('\n');
+        setDescricao(md);
+    };
+
+    const addChecklistItem = (text: string) => {
+        if (!text.trim()) return;
+        const newItems = [...checklistItems, { text: text.trim(), checked: false }];
+        setChecklistItems(newItems);
+        updateDescriptionFromChecklist(newItems);
+    };
+
+    const toggleChecklistItem = (index: number) => {
+        const newItems = [...checklistItems];
+        newItems[index].checked = !newItems[index].checked;
+        setChecklistItems(newItems);
+        updateDescriptionFromChecklist(newItems);
+    };
+
+    const removeChecklistItem = (index: number) => {
+        const newItems = checklistItems.filter((_, i) => i !== index);
+        setChecklistItems(newItems);
+        updateDescriptionFromChecklist(newItems);
+    };
+
+    const ChecklistEditor = () => {
+        const [newItem, setNewItem] = useState('');
+
+        return (
+            <div className="space-y-3 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Lista de Itens</span>
+                    <span className="text-[10px] text-indigo-500 font-bold">{checklistItems.length} itens</span>
+                </div>
+
+                <div className="space-y-2 max-h-[200px] overflow-y-auto no-scrollbar">
+                    {checklistItems.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-2 group animate-in slide-in-from-left-2 duration-200">
+                            <button
+                                type="button"
+                                onClick={() => toggleChecklistItem(idx)}
+                                className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 transition-colors ${item.checked ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'}`}
+                            >
+                                {item.checked && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                            </button>
+                            <span className={`text-sm flex-1 truncate ${item.checked ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200 font-medium'}`}>
+                                {item.text}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => removeChecklistItem(idx)}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-all"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <input
+                        type="text"
+                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-sm flex-1 focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
+                        placeholder="Novo item..."
+                        value={newItem}
+                        onChange={e => setNewItem(e.target.value)}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addChecklistItem(newItem);
+                                setNewItem('');
+                            }
+                        }}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => { addChecklistItem(newItem); setNewItem(''); }}
+                        className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition active:scale-95 shadow-lg shadow-indigo-600/20"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!titulo.trim() || !categoriaId) return;
@@ -136,18 +243,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                             />
                         </div>
 
-                        {/* Description */}
+                        {/* Description / Checklist */}
                         <div>
-                            <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Descrição</label>
-                            <textarea
-                                className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white min-h-[80px]"
-                                placeholder={subcategories.find(s => s.id === subcategoriaId)?.nome?.trim().toLowerCase() === 'compras'
-                                    ? "Dica: Use - [ ] para criar itens com checkbox!"
-                                    : "Detalhes adicionais..."
-                                }
-                                value={descricao}
-                                onChange={e => setDescricao(e.target.value)}
-                            />
+                            <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Conteúdo da Tarefa</label>
+                            {subcategories.find(s => s.id === subcategoriaId)?.nome?.trim().toLowerCase() === 'compras' ? (
+                                <ChecklistEditor />
+                            ) : (
+                                <textarea
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white min-h-[120px]"
+                                    placeholder="Detalhes adicionais..."
+                                    value={descricao}
+                                    onChange={e => setDescricao(e.target.value)}
+                                />
+                            )}
                         </div>
 
                         {/* Grid 1: Category & Sub */}
