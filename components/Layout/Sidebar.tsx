@@ -39,21 +39,24 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                     <span className="font-bold tracking-tight text-white/90">ZenTask <span className="text-indigo-400">Pro</span></span>
                 </div>
-                <button
-                    onClick={() => setDarkMode(!darkMode)}
-                    className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-all active:scale-95"
-                    title={darkMode ? "Modo Claro" : "Modo Escuro"}
-                >
-                    {darkMode ? (
-                        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    ) : (
-                        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                    )}
-                </button>
             </div>
 
             {/* Navigation */}
             <nav className="flex-1 px-4 py-6 space-y-1">
+                <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-md transition-colors mb-4 border border-white/5 bg-white/5 shadow-sm"
+                >
+                    <div className="p-1.5 bg-slate-800 rounded-lg text-indigo-400 group-hover:scale-110 transition-transform">
+                        {darkMode ? (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                        )}
+                    </div>
+                    <span className="font-bold tracking-tight">Modo {darkMode ? 'Claro' : 'Escuro'}</span>
+                </button>
+
                 <button className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium bg-slate-800 text-white rounded-md shadow-sm border border-slate-700/50">
                     <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
                     Dashboard
@@ -128,7 +131,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                 </div>
             </div>
-        </aside>
+        </aside >
     );
 };
 
