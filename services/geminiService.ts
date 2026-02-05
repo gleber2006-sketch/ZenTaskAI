@@ -34,11 +34,31 @@ export interface FilePart {
   data: string; // base64
 }
 
+
+// Throttle Protection
+let callCount = 0;
+let lastCallReset = Date.now();
+
 export const processTaskCommand = async (
   userInput: string,
   currentTasks: Task[],
   filePart?: FilePart
 ): Promise<AIResponse> => {
+  // Reset Reset Counter every 10 seconds
+  if (Date.now() - lastCallReset > 10000) {
+    callCount = 0;
+    lastCallReset = Date.now();
+  }
+
+  callCount++;
+  if (callCount > 5) {
+    console.error("⛔ TRAVA DE SEGURANÇA: Loop detectado no Zen Assistant. Parando.");
+    return {
+      action: ActionType.UNKNOWN,
+      message: "⛔ Erro Crítico: O sistema detectou um loop de requisições e parou por segurança. Aguarde 10 segundos."
+    };
+  }
+
   const model = 'gemini-flash-lite-latest';
 
   const taskListContext = currentTasks.length > 0
