@@ -17,6 +17,7 @@ import SettingsModal from './components/SettingsModal';
 import Sidebar from './components/Layout/Sidebar';
 
 const App: React.FC = () => {
+  console.log("🚀 ZenTaskAI v1.3.2 - UI Refined & Debug Deploy");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
