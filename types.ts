@@ -96,6 +96,7 @@ export enum ActionType {
   LIST = 'LIST',
   COMPLETE = 'COMPLETE',
   DELETE = 'DELETE',
+  DELETE_ALL = 'DELETE_ALL',
   UNKNOWN = 'UNKNOWN'
 }
 

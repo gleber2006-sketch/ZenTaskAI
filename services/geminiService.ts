@@ -100,16 +100,11 @@ Context: ${taskListContext}`;
 
 
     // Lista de modelos para tentar (Fallback Strategy - Exhaustive)
-    // Lista de modelos para tentar (Fallback Strategy - Exhaustive)
-    // PRIORIDADE: Modelos listados no Dashboard do Usuário (2.5 e 3.0)
+    // Lista de modelos OTIMIZADA (v1.4.4)
     const candidates = [
       'gemini-2.5-flash',
       'gemini-2.5-flash-lite',
-      'gemini-3.0-flash',
-      'gemini-3-flash',
-      'gemini-2.0-flash', // Retornou 429 antes (existe, mas sem cota?)
       'gemini-1.5-flash',
-      'gemini-1.5-pro',
       'gemini-pro',
     ];
 
@@ -123,12 +118,12 @@ Context: ${taskListContext}`;
           model: modelName,
           contents: { parts },
           config: {
-            systemInstruction, // SDK vai ignorar ou avisar se não suportado, mas tentar é válido
+            systemInstruction: systemInstruction + " \nIMPORTANT: If user wants to delete EVERYTHING or ALL tasks, return action='DELETE' and id='all'.",
             responseMimeType: "application/json",
             responseSchema: {
               type: Type.OBJECT,
               properties: {
-                action: { type: Type.STRING, enum: Object.values(ActionType) },
+                action: { type: Type.STRING, enum: [...Object.values(ActionType), 'DELETE_ALL'] },
                 createdTasks: {
                   type: Type.ARRAY,
                   items: {

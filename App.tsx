@@ -8,7 +8,7 @@ import TaskItem from './components/TaskItem';
 import CategoryManager from './components/CategoryManager';
 import TaskForm from './components/TaskForm';
 import { fetchCategories, forceResetCategories } from './services/categoryService';
-import { fetchTasks, deleteTask, createTasksBulk, toggleTaskStatus } from './services/taskService';
+import { fetchTasks, deleteTask, deleteAllTasks, createTasksBulk, toggleTaskStatus } from './services/taskService';
 import { processTaskCommand, FilePart } from './services/geminiService';
 import { ActionType, AIResponse } from './types';
 
@@ -190,7 +190,14 @@ const App: React.FC = () => {
         if (t) await toggleTaskStatus(t);
         loadData(user!.uid);
       } else if (response.action === ActionType.DELETE && response.id) {
-        await deleteTask(response.id);
+        if (response.id === 'all') {
+          await deleteAllTasks(user!.uid);
+        } else {
+          await deleteTask(response.id);
+        }
+        loadData(user!.uid);
+      } else if ((response.action as string) === 'DELETE_ALL') {
+        await deleteAllTasks(user!.uid);
         loadData(user!.uid);
       }
 

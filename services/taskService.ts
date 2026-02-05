@@ -129,6 +129,16 @@ export const deleteTask = async (id: string) => {
     await deleteDoc(doc(db, COLLECTION_TASKS, id));
 };
 
+export const deleteAllTasks = async (userId: string) => {
+    const q = query(collection(db, COLLECTION_TASKS), where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
+    await batch.commit();
+};
+
 export const toggleTaskStatus = async (task: Task) => {
     const newStatus: TaskStatus = task.status === 'concluida' ? 'pendente' : 'concluida';
     await updateTask(task.id, { status: newStatus });
