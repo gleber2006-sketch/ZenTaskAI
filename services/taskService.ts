@@ -181,6 +181,17 @@ export const createTasksBulk = async (userId: string, taskDataList: CreatedTaskD
         }
 
         const newTaskRef = doc(collection(db, COLLECTION_TASKS));
+
+        // Extract specialized fields into metadata
+        const metadata: Record<string, any> = {};
+        const knownFields = ['title', 'description', 'category', 'subcategory', 'importance', 'startDate', 'endDate', 'value', 'status', 'tipo'];
+        Object.keys(data).forEach(key => {
+            if (!knownFields.includes(key)) {
+                // @ts-ignore
+                metadata[key] = data[key];
+            }
+        });
+
         batch.set(newTaskRef, {
             userId,
             titulo: data.title,
@@ -189,12 +200,13 @@ export const createTasksBulk = async (userId: string, taskDataList: CreatedTaskD
             subcategoria_id,
             prioridade: (data.importance as any) || 'media',
             status: 'pendente',
-            tipo: 'tarefa',
+            tipo: data.tipo || 'tarefa',
             prazo: data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null,
             ordem: 0,
             criada_em: Timestamp.now(),
             atualizada_em: Timestamp.now(),
-            // Map extra fields if they exist in schema
+            metadata: Object.keys(metadata).length > 0 ? metadata : null,
+            // Map legacy fields
             value: data.value || null,
         });
     }

@@ -9,6 +9,16 @@
     "icons": [
         {
             "src": "/logo_zt.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo_zt.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo_zt.png",
             "sizes": "1024x1024",
             "type": "image/png"
         }

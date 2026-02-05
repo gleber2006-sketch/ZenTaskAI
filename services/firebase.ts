@@ -22,4 +22,16 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
+// Ativar persistência offline
+import { enableIndexedDbPersistence } from "firebase/firestore";
+if (typeof window !== "undefined") {
+    enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn("Múltiplas abas abertas, persistência habilitada apenas na primeira.");
+        } else if (err.code === 'unimplemented') {
+            console.warn("O navegador atual não suporta persistência offline.");
+        }
+    });
+}
+
 export default app;

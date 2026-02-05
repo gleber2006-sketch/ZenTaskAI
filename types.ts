@@ -85,6 +85,7 @@ export interface Task {
   // Metadata
   criada_em: any; // Timestamp
   atualizada_em: any; // Timestamp
+  metadata?: Record<string, any>;
 
   // Optional legacy fields mapping (kept loose for transition safety if needed, but discouraged)
   client?: string;
@@ -123,6 +124,7 @@ export interface CreatedTaskData {
   };
   category?: TaskCategory;
   subcategory?: string;
+  tipo?: TaskType;
 
   // Novos campos específicos (Surpresa)
   local?: string;

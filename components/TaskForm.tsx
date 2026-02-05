@@ -24,7 +24,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
     const [status, setStatus] = useState<TaskStatus>('pendente');
     const [tipo, setTipo] = useState<TaskType>('tarefa');
     const [prazo, setPrazo] = useState('');
-    const [value, setValue] = useState(''); // Legacy support for 'value' visual
+    const [recorrencia, setRecorrencia] = useState('');
+    const [value, setValue] = useState('');
+    const [metadata, setMetadata] = useState<Record<string, any>>({});
 
     // Data State
     const [categories, setCategories] = useState<Category[]>([]);
@@ -41,7 +43,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
             setStatus(existingTask.status);
             setTipo(existingTask.tipo);
             setValue(existingTask.value || '');
-            // Date handling would go here (converting Timestamp to string)
+            setRecorrencia(existingTask.recorrencia || '');
+            setMetadata(existingTask.metadata || {});
+
+            if (existingTask.prazo) {
+                const date = existingTask.prazo.toDate ? existingTask.prazo.toDate() : new Date(existingTask.prazo.seconds * 1000);
+                setPrazo(date.toISOString().split('T')[0]);
+            }
         }
     }, [existingTask, userId]); // Added userId
 
@@ -195,7 +203,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                 status,
                 tipo,
                 value: value || null,
-                // Garantir que prazos sejam salvos como null se vazios
+                recorrencia: recorrencia || null,
+                metadata: Object.keys(metadata).length > 0 ? metadata : null,
                 prazo: prazo ? Timestamp.fromDate(new Date(prazo)) : null,
             };
 
@@ -327,6 +336,47 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                                 </select>
                             </div>
                         </div>
+
+                        {/* Grid 3: Tipo & Prazo */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipo de Registro</label>
+                                <select
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white capitalize"
+                                    value={tipo}
+                                    onChange={e => setTipo(e.target.value as TaskType)}
+                                >
+                                    <option value="tarefa">Tarefa</option>
+                                    <option value="rotina">Rotina</option>
+                                    <option value="evento">Evento</option>
+                                    <option value="meta">Meta</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Prazo / Data</label>
+                                <input
+                                    type="date"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white"
+                                    value={prazo}
+                                    onChange={e => setPrazo(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Metadata / Info Adicional (ReadOnly for now if from AI) */}
+                        {Object.keys(metadata).length > 0 && (
+                            <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Informações Adicionais (IA)</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {Object.entries(metadata).map(([key, val]) => (
+                                        <div key={key} className="flex flex-col">
+                                            <span className="text-[9px] font-bold text-slate-500 uppercase">{key}</span>
+                                            <span className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate">{String(val)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Extra: Value (Legacy/Finance) */}
                         {categoriaId && categories.find(c => c.id === categoriaId)?.nome === 'Financeiro' && (
