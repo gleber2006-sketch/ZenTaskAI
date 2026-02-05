@@ -15,9 +15,17 @@ import StatsHero from './components/StatsHero';
 import CurrentFocus from './components/CurrentFocus';
 import SettingsModal from './components/SettingsModal';
 import Sidebar from './components/Layout/Sidebar';
+import SharedTaskLanding from './components/SharedTaskLanding';
 
 const App: React.FC = () => {
   console.log("🚀 ZenTaskAI v1.3.9 - Premium UI Definition");
+
+  // Routing Logic for Shared Tasks
+  const [sharedTaskId, setSharedTaskId] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('task');
+  });
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -294,6 +302,10 @@ const App: React.FC = () => {
     acc[key].push(t);
     return acc;
   }, {} as Record<string, Task[]>);
+
+  if (sharedTaskId) {
+    return <SharedTaskLanding taskId={sharedTaskId} />;
+  }
 
   const groupOrder: (keyof typeof groupedTasks)[] = ['meta', 'rotina', 'evento', 'tarefa'];
 

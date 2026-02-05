@@ -11,7 +11,8 @@ import {
     Timestamp,
     orderBy,
     limit,
-    writeBatch
+    writeBatch,
+    getDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Task, TaskStatus, TaskPriority, CreatedTaskData } from '../types';
@@ -155,6 +156,37 @@ export const toggleTaskStatus = async (task: Task) => {
 // Quick Actions
 export const setTaskPriority = async (id: string, prioridade: TaskPriority) => {
     await updateTask(id, { prioridade });
+};
+
+export const getPublicTask = async (taskId: string): Promise<Task | null> => {
+    try {
+        const docRef = doc(db, COLLECTION_TASKS, taskId);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+            const data = snap.data();
+            // Security check: only allow if explicitly shared (or we can skip for now if simplicity is key, but let's be safe)
+            if (data.shared) {
+                return { id: snap.id, ...data } as Task;
+            }
+            console.warn(`⚠️ Task ${taskId} is not marked as shared.`);
+        }
+        return null;
+    } catch (e) {
+        console.error("Error fetching public task:", e);
+        return null;
+    }
+};
+
+export const completeTaskExternally = async (taskId: string, completerName: string) => {
+    const docRef = doc(db, COLLECTION_TASKS, taskId);
+    await updateDoc(docRef, {
+        status: 'concluida',
+        atualizada_em: Timestamp.now(),
+        metadata: {
+            completed_by_external: true,
+            external_completer_name: completerName
+        }
+    });
 };
 
 export const createTasksBulk = async (userId: string, taskDataList: CreatedTaskData[]) => {

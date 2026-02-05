@@ -81,11 +81,16 @@ export interface Task {
   data_inicio?: any; // Timestamp
   recorrencia?: string;
   ordem: number;
+  shared?: boolean; // Enable public link
 
   // Metadata
   criada_em: any; // Timestamp
   atualizada_em: any; // Timestamp
-  metadata?: Record<string, any>;
+  metadata?: {
+    completed_by_external?: boolean;
+    external_completer_name?: string;
+    [key: string]: any;
+  };
 
   // Optional legacy fields mapping (kept loose for transition safety if needed, but discouraged)
   client?: string;
