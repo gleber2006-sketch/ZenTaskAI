@@ -8,6 +8,7 @@ import {
     query,
     where,
     getDocs,
+    getDoc,
     Timestamp,
     writeBatch
 } from 'firebase/firestore';
@@ -283,20 +284,28 @@ export const syncSystemSubcategories = async (userId: string) => {
             const systemSubs = SYSTEM_SUBCATEGORIES[catName];
 
             for (const subName of systemSubs) {
-                const alreadyExists = existingSubs.some(s =>
+                const existing = existingSubs.find(s =>
                     s.nome.trim().toLowerCase() === subName.trim().toLowerCase()
                 );
 
-                if (!alreadyExists) {
+                if (!existing) {
                     const subDocRef = doc(collection(db, COLLECTION_SUBCATS));
                     batch.set(subDocRef, {
                         categoria_id: category.id,
                         nome: subName,
                         ordem: systemSubs.indexOf(subName),
-                        ativa: true
+                        ativa: true,
+                        fixa: true // System subcategory
                     });
                     syncCount++;
                     console.log(`  ➕ Adicionando: ${subName}`);
+                } else if (!existing.fixa) {
+                    // Update existing to be fixed
+                    batch.update(doc(db, COLLECTION_SUBCATS, existing.id), {
+                        fixa: true
+                    });
+                    syncCount++;
+                    console.log(`  🛡️ Protegendo: ${subName}`);
                 }
             }
         }
@@ -379,7 +388,12 @@ export const createSubcategory = async (categoryId: string, data: Partial<Subcat
 };
 
 export const deleteSubcategory = async (id: string) => {
-    await deleteDoc(doc(db, COLLECTION_SUBCATS, id));
+    const docRef = doc(db, COLLECTION_SUBCATS, id);
+    const snap = await getDoc(docRef);
+    if (snap.exists() && snap.data()?.fixa) {
+        throw new Error("Subcategorias do sistema não podem ser excluídas.");
+    }
+    await deleteDoc(docRef);
 };
 
 /**

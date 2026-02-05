@@ -37,6 +37,7 @@ export interface Subcategory {
   cor?: string;
   ordem: number;
   ativa: boolean;
+  fixa?: boolean; // Protect from deletion
   descricao?: string;
 }
 
