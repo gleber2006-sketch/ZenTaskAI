@@ -100,7 +100,7 @@ Context: ${taskListContext}`;
 
 
     // Lista de modelos para tentar (Fallback Strategy - Exhaustive)
-    // Lista de modelos OTIMIZADA (v1.4.4)
+    // Lista de modelos OTIMIZADA (v1.4.5)
     const candidates = [
       'gemini-2.5-flash',
       'gemini-2.5-flash-lite',
@@ -118,7 +118,11 @@ Context: ${taskListContext}`;
           model: modelName,
           contents: { parts },
           config: {
-            systemInstruction: systemInstruction + " \nIMPORTANT: If user wants to delete EVERYTHING or ALL tasks, return action='DELETE' and id='all'.",
+            systemInstruction: systemInstruction + ` 
+IMPORTANT: Bulk actions:
+- To delete EVERYTHING: action='DELETE', id='all'.
+- To delete a CATEGORY: action='DELETE', id='cat:CategoryName'.
+- To delete a SUBCATEGORY: action='DELETE', id='sub:SubcategoryName'.`,
             responseMimeType: "application/json",
             responseSchema: {
               type: Type.OBJECT,

@@ -129,8 +129,16 @@ export const deleteTask = async (id: string) => {
     await deleteDoc(doc(db, COLLECTION_TASKS, id));
 };
 
-export const deleteAllTasks = async (userId: string) => {
-    const q = query(collection(db, COLLECTION_TASKS), where('userId', '==', userId));
+export const deleteAllTasks = async (userId: string, filters?: { categoria_id?: string, subcategoria_id?: string }) => {
+    let q = query(collection(db, COLLECTION_TASKS), where('userId', '==', userId));
+
+    if (filters?.categoria_id) {
+        q = query(q, where('categoria_id', '==', filters.categoria_id));
+    }
+    if (filters?.subcategoria_id) {
+        q = query(q, where('subcategoria_id', '==', filters.subcategoria_id));
+    }
+
     const snapshot = await getDocs(q);
     const batch = writeBatch(db);
     snapshot.docs.forEach((doc) => {

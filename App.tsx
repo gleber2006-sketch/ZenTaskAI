@@ -192,6 +192,21 @@ const App: React.FC = () => {
       } else if (response.action === ActionType.DELETE && response.id) {
         if (response.id === 'all') {
           await deleteAllTasks(user!.uid);
+        } else if (response.id.startsWith('cat:')) {
+          const catName = response.id.replace('cat:', '').trim();
+          const cat = categories.find(c => c.nome.toLowerCase() === catName.toLowerCase());
+          if (cat) await deleteAllTasks(user!.uid, { categoria_id: cat.id });
+        } else if (response.id.startsWith('sub:')) {
+          const subName = response.id.replace('sub:', '').trim();
+          // Find subcategory across all categories for simplicity
+          const { fetchSubcategories } = await import('./services/categoryService');
+          let subId = null;
+          for (const c of categories) {
+            const subs = await fetchSubcategories(c.id);
+            const matched = subs.find(s => s.nome.toLowerCase() === subName.toLowerCase());
+            if (matched) { subId = matched.id; break; }
+          }
+          if (subId) await deleteAllTasks(user!.uid, { subcategoria_id: subId });
         } else {
           await deleteTask(response.id);
         }
