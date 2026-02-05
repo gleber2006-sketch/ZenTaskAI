@@ -79,12 +79,16 @@ Context: ${taskListContext}`;
     }
 
 
-    // Lista de modelos para tentar (Fallback Strategy)
+    // Lista de modelos para tentar (Fallback Strategy - Exhaustive)
     const candidates = [
       'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-2.0-flash-exp',
+      'gemini-2.0-flash',
       'gemini-pro',
+      'gemini-1.0-pro-latest',
       'gemini-1.0-pro',
-      'gemini-2.0-flash-exp', // Para contas bleeding edge
+      'gemini-1.5-flash-latest',
       'gemini-experimental'
     ];
 
