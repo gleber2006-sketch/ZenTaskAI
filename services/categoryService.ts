@@ -93,9 +93,11 @@ export const SYSTEM_SUBCATEGORIES: Record<string, string[]> = {
 
 // --- Categories ---
 
-export const fetchCategories = async (userId: string): Promise<Category[]> => {
+// --- Categories ---
+
+export const fetchCategories = async (userId: string, autoSeed = true): Promise<Category[]> => {
     try {
-        console.log('🔍 Buscando categorias para o usuário:', userId);
+        console.log(`🔍 Buscando categorias para o usuário: ${userId} (AutoSeed: ${autoSeed})`);
 
         const q = query(
             collection(db, COLLECTION_CATS),
@@ -107,9 +109,10 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
 
         console.log(`📁 Encontradas ${categories.length} categorias.`);
 
-        // Se estiver vazio, gera o seeding inicial
-        if (categories.length === 0) {
+        // Se estiver vazio e autoSeed for true, gera o seeding inicial
+        if (categories.length === 0 && autoSeed) {
             console.log('🌱 Primeiro acesso: Gerando categorias e subcategorias...');
+            // Pass autoSeed=false to prevent infinite recursion if seed calls fetch again
             await seedCategoriesAndSubcategories(userId);
             const retrySnapshot = await getDocs(q);
             categories = retrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
@@ -136,7 +139,8 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
 export const seedCategoriesAndSubcategories = async (userId: string) => {
     try {
         console.log('🌱 Starting non-destructive seed process...');
-        const currentCats = await fetchCategories(userId);
+        // CRITICAL: Call with autoSeed=false to prevent recursion
+        const currentCats = await fetchCategories(userId, false);
         const batch = writeBatch(db);
         const categoryIdMap: Record<string, string> = {};
 
