@@ -78,75 +78,98 @@ Context: ${taskListContext}`;
       });
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-pro',
-      contents: { parts },
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 0 },
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            action: {
-              type: Type.STRING,
-              enum: Object.values(ActionType),
-            },
-            createdTasks: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING },
-                  category: { type: Type.STRING, enum: ['Pessoal', 'Trabalho', 'Clientes', 'Financeiro', 'Estudos', 'Projetos'] },
-                  subcategory: { type: Type.STRING },
-                  description: { type: Type.STRING },
-                  contato: { type: Type.STRING },
-                  empresa: { type: Type.STRING },
-                  tarefa: { type: Type.STRING },
-                  value: { type: Type.STRING },
-                  importance: { type: Type.STRING, enum: ['baixa', 'média', 'alta'] },
-                  startDate: { type: Type.STRING },
-                  endDate: { type: Type.STRING },
-                  payment: {
+
+    // Lista de modelos para tentar (Fallback Strategy)
+    const candidates = [
+      'gemini-1.5-flash',
+      'gemini-pro',
+      'gemini-1.0-pro',
+      'gemini-2.0-flash-exp', // Para contas bleeding edge
+      'gemini-experimental'
+    ];
+
+    let response;
+    let lastError;
+
+    for (const modelName of candidates) {
+      try {
+        console.log(`🤖 Tentando modelo: ${modelName}...`);
+        response = await ai.models.generateContent({
+          model: modelName,
+          contents: { parts },
+          config: {
+            systemInstruction, // SDK vai ignorar ou avisar se não suportado, mas tentar é válido
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                action: { type: Type.STRING, enum: Object.values(ActionType) },
+                createdTasks: {
+                  type: Type.ARRAY,
+                  items: {
                     type: Type.OBJECT,
                     properties: {
-                      tipo: { type: Type.STRING, enum: ['À vista', 'Parcelado'] },
-                      totalParcelas: { type: Type.NUMBER },
-                      status: { type: Type.STRING, enum: ['Não aplicável', 'Pendente', 'Pago'] },
-                      dataPagamento: { type: Type.STRING }
-                    }
-                  },
-                  // Novos campos
-                  local: { type: Type.STRING },
-                  humor: { type: Type.STRING },
-                  participantes: { type: Type.STRING },
-                  bemEstar: { type: Type.STRING },
-                  briefing: { type: Type.STRING },
-                  linkArquivos: { type: Type.STRING },
-                  prazoAprovação: { type: Type.STRING },
-                  fluxo: { type: Type.STRING, enum: ['Entrada', 'Saída'] },
-                  tipoFinanceiro: { type: Type.STRING, enum: ['Fixo', 'Variável'] },
-                  comprovante: { type: Type.STRING },
-                  materia: { type: Type.STRING },
-                  topico: { type: Type.STRING },
-                  linkAula: { type: Type.STRING },
-                  dataRevisao: { type: Type.STRING },
-                  milestone: { type: Type.STRING },
-                  stack: { type: Type.STRING },
-                  repo: { type: Type.STRING },
-                  sprint: { type: Type.STRING }
+                      title: { type: Type.STRING },
+                      category: { type: Type.STRING, enum: ['Pessoal', 'Trabalho', 'Clientes', 'Financeiro', 'Estudos', 'Projetos'] },
+                      subcategory: { type: Type.STRING },
+                      description: { type: Type.STRING },
+                      contato: { type: Type.STRING },
+                      empresa: { type: Type.STRING },
+                      tarefa: { type: Type.STRING },
+                      value: { type: Type.STRING },
+                      importance: { type: Type.STRING, enum: ['baixa', 'média', 'alta'] },
+                      startDate: { type: Type.STRING },
+                      endDate: { type: Type.STRING },
+                      payment: {
+                        type: Type.OBJECT,
+                        properties: {
+                          tipo: { type: Type.STRING, enum: ['À vista', 'Parcelado'] },
+                          totalParcelas: { type: Type.NUMBER },
+                          status: { type: Type.STRING, enum: ['Não aplicável', 'Pendente', 'Pago'] },
+                          dataPagamento: { type: Type.STRING }
+                        }
+                      },
+                      local: { type: Type.STRING },
+                      humor: { type: Type.STRING },
+                      participantes: { type: Type.STRING },
+                      bemEstar: { type: Type.STRING },
+                      briefing: { type: Type.STRING },
+                      linkArquivos: { type: Type.STRING },
+                      prazoAprovação: { type: Type.STRING },
+                      fluxo: { type: Type.STRING, enum: ['Entrada', 'Saída'] },
+                      tipoFinanceiro: { type: Type.STRING, enum: ['Fixo', 'Variável'] },
+                      comprovante: { type: Type.STRING },
+                      materia: { type: Type.STRING },
+                      topico: { type: Type.STRING },
+                      linkAula: { type: Type.STRING },
+                      dataRevisao: { type: Type.STRING },
+                      milestone: { type: Type.STRING },
+                      stack: { type: Type.STRING },
+                      repo: { type: Type.STRING },
+                      sprint: { type: Type.STRING }
+                    },
+                    required: ["title"]
+                  }
                 },
-                required: ["title"]
-              }
+                id: { type: Type.STRING },
+                message: { type: Type.STRING },
+              },
+              required: ["action", "message"],
             },
-            id: { type: Type.STRING },
-            message: { type: Type.STRING },
           },
-          required: ["action", "message"],
-        },
-      },
-    });
+        });
+        // Se chegou aqui, funcionou!
+        console.log(`✅ Sucesso com modelo: ${modelName}`);
+        break;
+      } catch (e: any) {
+        console.warn(`⚠️ Falha com ${modelName}:`, e.message);
+        lastError = e;
+        // Continua para o próximo
+      }
+    }
+
+    if (!response && lastError) throw lastError;
+
 
     return JSON.parse(response.text || "{}") as AIResponse;
   } catch (error: any) {
