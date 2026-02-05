@@ -11,6 +11,8 @@ interface SettingsModalProps {
     showSupport: boolean;
     setShowSupport: (show: boolean) => void;
     onLogout: () => void;
+    darkMode: boolean;
+    setDarkMode: (value: boolean) => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -22,7 +24,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     onForceResetCategories,
     showSupport,
     setShowSupport,
-    onLogout
+    onLogout,
+    darkMode,
+    setDarkMode
 }) => {
     console.log("⚙️ SettingsModal v1.3.2 loaded");
     if (!isOpen || !user) return null;
@@ -90,6 +94,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                 <span className="text-[9px] font-black bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 uppercase">Em Breve</span>
                             </button>
                         </div>
+
+                        {/* Theme Toggle - Mobile optimized */}
+                        <button
+                            onClick={() => setDarkMode(!darkMode)}
+                            className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 border border-slate-100 dark:border-slate-800/60 group transition-all"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl group-hover:rotate-12 transition-transform">
+                                    {darkMode ? (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                    ) : (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                                    )}
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Aparência</p>
+                                    <p className="text-[10px] text-slate-500">Tema {darkMode ? 'Claro' : 'Escuro'}</p>
+                                </div>
+                            </div>
+                            <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${darkMode ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 ${darkMode ? 'left-6' : 'left-1'}`}></div>
+                            </div>
+                        </button>
                     </div>
 
                     <div className="pt-2">

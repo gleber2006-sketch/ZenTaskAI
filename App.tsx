@@ -17,7 +17,7 @@ import SettingsModal from './components/SettingsModal';
 import Sidebar from './components/Layout/Sidebar';
 
 const App: React.FC = () => {
-  console.log("🚀 ZenTaskAI v1.3.7 - Mobile Layout Fixed");
+  console.log("🚀 ZenTaskAI v1.3.8 - UI Final Polish");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -684,6 +684,8 @@ const App: React.FC = () => {
         onLogout={handleLogout}
         showSupport={showSupport}
         setShowSupport={setShowSupport}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
       />
     </div >
   );

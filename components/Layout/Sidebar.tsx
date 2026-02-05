@@ -103,6 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             >
                                 <div className="flex items-center gap-2.5">
                                     <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : ''}`} style={!isActive && category ? { backgroundColor: category.cor } : {}}></div>
+                                    <span className="text-sm mr-1">{catId === 'Tudo' ? '📋' : (category?.icone || '🏷️')}</span>
                                     <span className="truncate">{catId === 'Tudo' ? 'Todas as Tarefas' : (category?.nome || catId)}</span>
                                 </div>
                                 {isActive && <div className="w-1 h-1 bg-white rounded-full"></div>}
