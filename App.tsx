@@ -17,7 +17,7 @@ import SettingsModal from './components/SettingsModal';
 import Sidebar from './components/Layout/Sidebar';
 
 const App: React.FC = () => {
-  console.log("🚀 ZenTaskAI v1.3.6 - Native Select Filters Implemented");
+  console.log("🚀 ZenTaskAI v1.3.7 - Mobile Layout Fixed");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
