@@ -317,9 +317,25 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
                 if (!task.shared) {
                   await updateTask(task.id, { shared: true });
                 }
+
                 const shareUrl = `${window.location.origin}/?task=${task.id}`;
-                const waText = encodeURIComponent(`⚡ *ZenTask Pro* | Atribuí uma tarefa para você:\n\n*${task.titulo}*\n\nVisualize e conclua aqui: ${shareUrl}`);
-                window.open(`https://wa.me/?text=${waText}`, '_blank');
+                const shareTitle = 'ZenTask Pro | Tarefa Atribuída';
+                const shareText = `⚡ Atribuí uma tarefa para você: ${task.titulo}. Visualize e conclua aqui:`;
+
+                if (navigator.share) {
+                  try {
+                    await navigator.share({
+                      title: shareTitle,
+                      text: shareText,
+                      url: shareUrl,
+                    });
+                  } catch (err) {
+                    console.log('Error sharing:', err);
+                  }
+                } else {
+                  const waText = encodeURIComponent(`⚡ *ZenTask Pro* | Atribuí uma tarefa para você:\n\n*${task.titulo}*\n\nVisualize e conclua aqui: ${shareUrl}`);
+                  window.open(`https://wa.me/?text=${waText}`, '_blank');
+                }
               }}
               className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/50 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 active:scale-95 transition-all"
             >
