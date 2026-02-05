@@ -331,6 +331,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                                 >
                                     <option value="pendente">Pendente</option>
                                     <option value="em_progresso">Em Progresso</option>
+                                    <option value="aguardando">Aguardando</option>
                                     <option value="bloqueada">Bloqueada</option>
                                     <option value="concluida">Concluída</option>
                                 </select>

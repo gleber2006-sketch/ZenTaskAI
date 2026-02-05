@@ -161,6 +161,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
   const statusLabels = {
     pendente: 'Pendente',
     em_progresso: 'Em Progresso',
+    aguardando: 'Aguardando',
     bloqueada: 'Bloqueada',
     concluida: 'Concluída'
   };

@@ -13,6 +13,7 @@ interface SidebarProps {
     setActiveCategory: (value: string | 'Tudo') => void;
     categories: Category[];
     user: User | null;
+    onLogout: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -26,6 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     setActiveCategory,
     categories,
     user,
+    onLogout,
 }) => {
     return (
         <aside className={`w-64 bg-slate-900 dark:bg-slate-950 text-white flex flex-col shrink-0 transition-all z-20 ${focusMode ? 'hidden' : 'hidden md:flex'} border-r border-slate-800`}>
@@ -117,6 +119,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <p className="text-[10px] font-bold text-white/90 truncate">{user?.email?.split('@')[0] || 'Usuário Pro'}</p>
                         <p className="text-[9px] text-white/40 font-medium truncate uppercase tracking-tighter">{user?.email || 'ZenTask Plan'}</p>
                     </div>
+                    <button
+                        onClick={onLogout}
+                        className="p-2 text-slate-400 hover:text-red-400 transition-colors bg-white/5 rounded-lg border border-white/5 hover:border-red-400/20 shadow-sm"
+                        title="Sair do Sistema"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    </button>
                 </div>
             </div>
         </aside>

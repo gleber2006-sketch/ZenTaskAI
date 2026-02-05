@@ -58,7 +58,7 @@ export interface Attachment {
 
 // Task System
 export type TaskPriority = 'baixa' | 'media' | 'alta' | 'critica';
-export type TaskStatus = 'pendente' | 'em_progresso' | 'bloqueada' | 'concluida';
+export type TaskStatus = 'pendente' | 'em_progresso' | 'aguardando' | 'bloqueada' | 'concluida';
 export type TaskType = 'tarefa' | 'rotina' | 'evento' | 'meta';
 
 export interface Task {
