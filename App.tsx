@@ -372,7 +372,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Sub-Filters: Status & Priority - Native Select (v1.3.6) */}
-            <div className="mb-6 flex flex-col sm:flex-row gap-3">
+            <div className="mb-6 flex flex-row gap-3">
               {/* Status Select */}
               <div className="relative flex-1">
                 <div className="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-700/30">
