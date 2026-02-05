@@ -17,7 +17,7 @@ import SettingsModal from './components/SettingsModal';
 import Sidebar from './components/Layout/Sidebar';
 
 const App: React.FC = () => {
-  console.log("🚀 ZenTaskAI v1.3.4 - FORCE DEPLOY CHECK");
+  console.log("🚀 ZenTaskAI v1.3.5 - Dropdown Filters Implemented");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -40,6 +40,8 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
   const [history, setHistory] = useState<{ role: 'user' | 'assistant'; text: string; hasFile?: boolean }[]>([
     { role: 'assistant', text: 'Sou seu assistente de tarefas com inteligência financeira integrada. Você pode digitar comandos ou anexar arquivos para criar fluxos completos.' }
   ]);
@@ -371,48 +373,92 @@ const App: React.FC = () => {
               })}
             </div>
 
-            {/* Sub-Filters: Status & Priority - Refined Desktop View */}
-            <div className="mb-6">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1 flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-1.5 rounded-2xl border border-slate-200/20 dark:border-slate-700/30">
-                  <div className="pl-2 pr-1 text-slate-400">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
+            {/* Sub-Filters: Status & Priority - Dropdown View (v1.3.5) */}
+            <div className="mb-6 flex flex-col sm:flex-row gap-3 relative z-30">
+              {/* Status Dropdown */}
+              <div className="relative flex-1">
+                <button
+                  onClick={() => {
+                    setShowStatusDropdown(!showStatusDropdown);
+                    setShowPriorityDropdown(false);
+                  }}
+                  className="w-full flex items-center justify-between gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-700/30 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-all"
+                >
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
+                    <span className="uppercase tracking-widest text-[10px]">Status:</span>
+                    <span className="text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px]">
+                      {statusFilter === 'Tudo' ? 'Todos' : statusFilter.replace('_', ' ')}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar flex-1">
-                    {(['Tudo', 'pendente', 'em_progresso', 'aguardando', 'bloqueada', 'concluida'] as const).map(status => (
-                      <button
-                        key={status}
-                        onClick={() => setStatusFilter(status)}
-                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex-1 ${statusFilter === status
-                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600/50'
-                          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
-                          }`}
-                      >
-                        {status === 'Tudo' ? 'Todos' : status.replace('_', ' ')}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                  <svg className={`w-4 h-4 transition-transform ${showStatusDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
 
-                <div className="flex-1 flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-1.5 rounded-2xl border border-slate-200/20 dark:border-slate-700/30">
-                  <div className="pl-2 pr-1 text-slate-400">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
+                {showStatusDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowStatusDropdown(false)}></div>
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-1.5 z-20 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                      {(['Tudo', 'pendente', 'em_progresso', 'aguardando', 'bloqueada', 'concluida'] as const).map(status => (
+                        <button
+                          key={status}
+                          onClick={() => {
+                            setStatusFilter(status);
+                            setShowStatusDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${statusFilter === status
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                            }`}
+                        >
+                          {status === 'Tudo' ? 'Todos os Status' : status.replace('_', ' ')}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Priority Dropdown */}
+              <div className="relative flex-1">
+                <button
+                  onClick={() => {
+                    setShowPriorityDropdown(!showPriorityDropdown);
+                    setShowStatusDropdown(false);
+                  }}
+                  className="w-full flex items-center justify-between gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-700/30 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-all"
+                >
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
+                    <span className="uppercase tracking-widest text-[10px]">Prioridade:</span>
+                    <span className="text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px]">
+                      {priorityFilter === 'Tudo' ? 'Todas' : priorityFilter}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar flex-1">
-                    {(['Tudo', 'baixa', 'media', 'alta', 'critica'] as const).map(prio => (
-                      <button
-                        key={prio}
-                        onClick={() => setPriorityFilter(prio)}
-                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex-1 ${priorityFilter === prio
-                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600/50'
-                          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
-                          }`}
-                      >
-                        {prio === 'Tudo' ? 'Todas' : prio}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                  <svg className={`w-4 h-4 transition-transform ${showPriorityDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+
+                {showPriorityDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowPriorityDropdown(false)}></div>
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-1.5 z-20 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                      {(['Tudo', 'baixa', 'media', 'alta', 'critica'] as const).map(prio => (
+                        <button
+                          key={prio}
+                          onClick={() => {
+                            setPriorityFilter(prio);
+                            setShowPriorityDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${priorityFilter === prio
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                            }`}
+                        >
+                          {prio === 'Tudo' ? 'Todas as Prioridades' : prio}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
