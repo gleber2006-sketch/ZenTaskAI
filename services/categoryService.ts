@@ -19,10 +19,11 @@ const COLLECTION_SUBCATS = 'subcategories';
 
 
 export const SYSTEM_CATEGORIES = [
+    { nome: 'Trabalho', icone: '💼', cor: 'bg-indigo-600' },
     { nome: 'Financeiro', icone: '💰', cor: 'bg-emerald-600' },
     { nome: 'Comercial', icone: '🤝', cor: 'bg-blue-600' },
     { nome: 'Pessoal', icone: '👤', cor: 'bg-green-500' },
-    { nome: 'Estudos', icone: '📚', cor: 'bg-indigo-500' },
+    { nome: 'Estudos', icone: '📚', cor: 'bg-violet-500' },
     { nome: 'Parceiros', icone: '👥', cor: 'bg-orange-500' },
     { nome: 'Saúde', icone: '❤️', cor: 'bg-red-500' },
     { nome: 'Rotina', icone: '🔄', cor: 'bg-slate-500' },
@@ -30,6 +31,15 @@ export const SYSTEM_CATEGORIES = [
 
 // Subcategories mapped to parent category names
 export const SYSTEM_SUBCATEGORIES: Record<string, string[]> = {
+    'Trabalho': [
+        'Reuniões',
+        'Administrativo',
+        'Planejamento',
+        'Prazos',
+        'Desenvolvimento',
+        'Marketing',
+        'Suporte'
+    ],
     'Financeiro': [
         'Contas a pagar',
         'Contas a receber',
