@@ -247,13 +247,31 @@ export const syncSystemSubcategories = async (userId: string) => {
 
         for (const catName of Object.keys(SYSTEM_SUBCATEGORIES)) {
             // Busca ignorando espaços e case
-            const category = cats.find(c =>
+            let category = cats.find(c =>
                 c.nome.trim().toLowerCase() === catName.trim().toLowerCase()
             );
 
             if (!category) {
-                console.warn(`⚠️ Categoria do sistema "${catName}" não encontrada no banco. Pulando.`);
-                continue;
+                console.warn(`⚠️ Categoria do sistema "${catName}" não encontrada. Criando agora...`);
+                // Find metadata
+                const meta = SYSTEM_CATEGORIES.find(m => m.nome === catName);
+                if (meta) {
+                    const newCatRef = await addDoc(collection(db, COLLECTION_CATS), {
+                        nome: meta.nome,
+                        tipo: 'system',
+                        fixa: true,
+                        icone: meta.icone,
+                        cor: meta.cor,
+                        ordem: SYSTEM_CATEGORIES.indexOf(meta),
+                        ativa: true,
+                        criada_em: Timestamp.now(),
+                        criada_por: userId
+                    });
+                    // Refresh category list for next iteration/usage
+                    category = { id: newCatRef.id, ...meta, tipo: 'system', fixa: true, ativa: true, ordem: 0, criada_em: null, criada_por: userId } as any;
+                } else {
+                    continue; // Should not happen if arrays are synced
+                }
             }
 
             console.log(`📂 Verificando subcategorias para: ${category.nome} (ID: ${category.id})`);

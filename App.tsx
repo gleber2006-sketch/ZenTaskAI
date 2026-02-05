@@ -60,6 +60,8 @@ const App: React.FC = () => {
       if (currentUser) {
         loadData(currentUser.uid);
       } else {
+        setTasks([]);
+        setCategories([]);
         setLoading(false);
       }
     });
