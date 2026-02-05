@@ -104,14 +104,14 @@ export const fetchCategories = async (userId: string): Promise<Category[]> => {
             const retrySnapshot = await getDocs(q);
             categories = retrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
         } else {
-            // "AUTO-HEALING": Verifica se faltam subcategorias do sistema (correção proativa)
-            // Fazemos isso em background ou apenas se necessário? Vamos fazer check leve.
+            // "AUTO-HEALING": Desativado temporariamente para evitar loops de sync agressivos.
+            // O usuário pode sincronizar manualmente nas Configurações se precisar.
+            /*
             const needsSync = categories.some(c => c.fixa && c.tipo === 'system');
             if (needsSync) {
-                // Dispara sincronização silenciosa se alguma categoria de sistema existir
-                // Isso garante que se o usuário deletou subcats ou se falhou no passado, recuperamos.
                 syncSystemSubcategories(userId).catch(e => console.warn("Erro no auto-sync:", e));
             }
+            */
         }
 
         categories.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
