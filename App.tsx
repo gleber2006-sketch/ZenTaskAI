@@ -679,6 +679,7 @@ const App: React.FC = () => {
             }
           }
         }}
+        onLogout={handleLogout}
         showSupport={showSupport}
         setShowSupport={setShowSupport}
       />
