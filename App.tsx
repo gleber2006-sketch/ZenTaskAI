@@ -371,18 +371,18 @@ const App: React.FC = () => {
             </div>
 
             {/* Sub-Filters: Status & Priority */}
-            <div className="mb-6 space-y-3">
-              <div className="flex gap-4">
+            <div className="mb-6 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Status</p>
-                  <div className="flex space-x-2 overflow-x-auto pb-1 no-scrollbar">
+                  <div className="bg-slate-100/50 dark:bg-slate-800/40 p-1 rounded-2xl flex items-center gap-1 overflow-x-auto no-scrollbar">
                     {(['Tudo', 'pendente', 'em_progresso', 'aguardando', 'bloqueada', 'concluida'] as const).map(status => (
                       <button
                         key={status}
                         onClick={() => setStatusFilter(status)}
-                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border shrink-0 ${statusFilter === status
-                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
-                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-indigo-100 dark:hover:border-indigo-900/40'
+                        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex-1 ${statusFilter === status
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600/50'
+                          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
                           }`}
                       >
                         {status === 'Tudo' ? 'Todos' : status.replace('_', ' ')}
@@ -393,14 +393,14 @@ const App: React.FC = () => {
 
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Prioridade</p>
-                  <div className="flex space-x-2 overflow-x-auto pb-1 no-scrollbar">
+                  <div className="bg-slate-100/50 dark:bg-slate-800/40 p-1 rounded-2xl flex items-center gap-1 overflow-x-auto no-scrollbar">
                     {(['Tudo', 'baixa', 'media', 'alta', 'critica'] as const).map(prio => (
                       <button
                         key={prio}
                         onClick={() => setPriorityFilter(prio)}
-                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border shrink-0 ${priorityFilter === prio
-                          ? 'bg-slate-800 border-slate-800 text-white dark:bg-slate-200 dark:border-slate-200 dark:text-slate-900 shadow-md'
-                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
+                        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex-1 ${priorityFilter === prio
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600/50'
+                          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
                           }`}
                       >
                         {prio === 'Tudo' ? 'Todas' : prio}
