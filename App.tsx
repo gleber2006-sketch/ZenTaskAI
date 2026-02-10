@@ -807,11 +807,38 @@ const App: React.FC = () => {
       {/* MOBILE BOTTOM NAVIGATION */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 flex items-center justify-around px-2 py-3 md:hidden z-50">
         <button
-          onClick={() => setActiveMobileTab('tasks')}
-          className={`flex flex-col items-center gap-1 transition-all ${activeMobileTab === 'tasks' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+          onClick={() => {
+            setActiveMobileTab('tasks');
+            setNavMode('tasks');
+            setFocusMode(false);
+          }}
+          className={`flex flex-col items-center gap-1 transition-all ${activeMobileTab === 'tasks' && navMode === 'tasks' && !focusMode ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
           <span className="text-[10px] font-bold uppercase tracking-tight">Fluxo</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveMobileTab('tasks');
+            setNavMode('dashboard');
+            setFocusMode(false);
+          }}
+          className={`flex flex-col items-center gap-1 transition-all ${activeMobileTab === 'tasks' && navMode === 'dashboard' && !focusMode ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span className="text-[10px] font-bold uppercase tracking-tight">Dashboard</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveMobileTab('tasks');
+            setFocusMode(true);
+          }}
+          className={`flex flex-col items-center gap-1 transition-all ${activeMobileTab === 'tasks' && focusMode ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+          <span className="text-[10px] font-bold uppercase tracking-tight">Foco</span>
         </button>
 
         <button

@@ -66,26 +66,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         </div>
                     </div>
 
-                    {/* Navegação Mobile (v1.10.1) */}
-                    <div className="space-y-3 sm:hidden">
-                        <p className="px-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Navegação</p>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                onClick={() => { setNavMode('dashboard'); onClose(); }}
-                                className={`flex flex-col items-center justify-center p-4 rounded-3xl border transition-all active:scale-95 ${navMode === 'dashboard' ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/20' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'}`}
-                            >
-                                <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                <span className="text-[10px] font-black uppercase tracking-tight">Dashboard</span>
-                            </button>
-                            <button
-                                onClick={() => { setNavMode('tasks'); onClose(); }}
-                                className={`flex flex-col items-center justify-center p-4 rounded-3xl border transition-all active:scale-95 ${navMode === 'tasks' ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/20' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'}`}
-                            >
-                                <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h7" /></svg>
-                                <span className="text-[10px] font-black uppercase tracking-tight">Fluxo Central</span>
-                            </button>
-                        </div>
-                    </div>
 
                     <div className="space-y-3">
                         <p className="px-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Preferências</p>
