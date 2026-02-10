@@ -5,15 +5,18 @@ interface CurrentFocusProps {
     topTask: Task | undefined;
     onToggleStatus: (task: Task) => void;
     onExitFocus: () => void;
+    tasks: Task[]; // Recebe a lista de tarefas para permitir seleção
+    onSelectFocusTask: (task: Task) => void; // Callback para definir a tarefa de foco manualmente
 }
 
 type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
 
-const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, onExitFocus }) => {
+const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, onExitFocus, tasks, onSelectFocusTask }) => {
     const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [isActive, setIsActive] = useState(false);
     const [mode, setMode] = useState<PomodoroMode>('work');
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const [isSelecting, setIsSelecting] = useState(false);
 
     useEffect(() => {
         if (isActive && timeLeft > 0) {
@@ -48,40 +51,95 @@ const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, on
         else setTimeLeft(15 * 60);
     };
 
-    if (!topTask) return null;
+    // Filtra tarefas elegíveis para seleção (não concluídas)
+    const availableTasks = tasks.filter(t => !t.concluida);
 
     return (
-        <div className="mb-8 p-8 rounded-[3rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-600/30 relative overflow-hidden group border border-white/10 animate-in slide-in-from-top-4 duration-700">
+        <div className="mb-8 p-6 md:p-8 rounded-[3rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-600/30 relative overflow-hidden group border border-white/10 animate-in slide-in-from-top-4 duration-700">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-white/10 transition-all duration-700"></div>
 
             <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start md:items-center">
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                     <div className="flex items-center gap-2 mb-4">
-                        <span className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md">Foco Atual</span>
-                        {topTask.prioridade === 'critica' && <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>}
+                        <span className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md">
+                            {mode === 'work' ? 'Modo Flow' : 'Modo Pausa'}
+                        </span>
+                        {isActive && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>}
                     </div>
-                    <h1 className="text-4xl font-black mb-3 leading-tight tracking-tight drop-shadow-md">{topTask.titulo}</h1>
-                    <p className="text-indigo-100/70 text-sm max-w-xl line-clamp-2 mb-6 font-medium">
-                        {topTask.descricao || "Mantenha o foco absoluto para concluir este objetivo e entrar em estado de flow."}
-                    </p>
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => onToggleStatus(topTask)}
-                            className="px-6 py-3 bg-white text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all hover:bg-slate-50 border-b-4 border-indigo-100"
-                        >
-                            Concluir Missão
-                        </button>
-                        <button
-                            onClick={onExitFocus}
-                            className="text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                            Sair do Foco
-                        </button>
-                    </div>
+
+                    {topTask ? (
+                        <>
+                            <h1 className="text-3xl md:text-4xl font-black mb-3 leading-tight tracking-tight drop-shadow-md">{topTask.titulo}</h1>
+                            <p className="text-indigo-100/70 text-sm max-w-xl line-clamp-2 md:line-clamp-3 mb-6 font-medium">
+                                {topTask.descricao || "Mantenha o foco absoluto para concluir este objetivo e entrar em estado de flow."}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-4">
+                                <button
+                                    onClick={() => onToggleStatus(topTask)}
+                                    className="px-6 py-3 bg-white text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all hover:bg-slate-50 border-b-4 border-indigo-100 flex-1 md:flex-none text-center"
+                                >
+                                    Concluir Missão
+                                </button>
+                                <button
+                                    onClick={() => onSelectFocusTask(null as any)} // Hack to clear task
+                                    className="text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
+                                >
+                                    Trocar Objetivo
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="animate-in fade-in slide-in-from-left-4 duration-500">
+                            <h1 className="text-3xl font-black mb-2 leading-tight tracking-tight">Foco Livre</h1>
+                            <p className="text-indigo-100/70 text-sm mb-6 font-medium">
+                                Utilize o cronômetro para focar em tarefas externas ou selecione um objetivo da sua lista.
+                            </p>
+
+                            {!isSelecting ? (
+                                <button
+                                    onClick={() => setIsSelecting(true)}
+                                    className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs font-black uppercase tracking-widest border border-white/20 transition-all flex items-center gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                                    Selecionar Objetivo
+                                </button>
+                            ) : (
+                                <div className="bg-white/10 p-2 rounded-2xl border border-white/10 max-h-48 overflow-y-auto no-scrollbar">
+                                    {availableTasks.length > 0 ? (
+                                        <div className="space-y-1">
+                                            {availableTasks.slice(0, 5).map(task => (
+                                                <button
+                                                    key={task.id}
+                                                    onClick={() => {
+                                                        onSelectFocusTask(task);
+                                                        setIsSelecting(false);
+                                                    }}
+                                                    className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors flex items-center justify-between group/item"
+                                                >
+                                                    <span className="text-sm font-bold truncate pr-4">{task.titulo}</span>
+                                                    <svg className="w-4 h-4 opacity-0 group-hover/item:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                                </button>
+                                            ))}
+                                            <button
+                                                onClick={() => setIsSelecting(false)}
+                                                className="w-full py-2 text-[10px] font-bold uppercase tracking-widest text-white/50 hover:text-white"
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 text-center">
+                                            <p className="text-sm font-medium">Nenhuma tarefa pendente.</p>
+                                            <button onClick={() => setIsSelecting(false)} className="mt-2 text-xs underline">Voltar</button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
-                <div className="w-full md:w-auto bg-white/10 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 flex flex-col items-center gap-4 shadow-inner">
+                <div className="w-full md:w-auto bg-white/10 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 flex flex-col items-center gap-4 shadow-inner shrink-0">
                     <div className="flex gap-2">
                         {(['work', 'shortBreak'] as const).map((m) => (
                             <button
@@ -94,16 +152,26 @@ const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, on
                         ))}
                     </div>
 
-                    <div className="text-6xl font-black tracking-tighter tabular-nums drop-shadow-lg">
+                    <div className="text-6xl font-black tracking-tighter tabular-nums drop-shadow-lg font-mono">
                         {formatTime(timeLeft)}
                     </div>
 
-                    <button
-                        onClick={toggleTimer}
-                        className={`w-full py-4 px-8 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg ${isActive ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-emerald-400 text-slate-900 shadow-emerald-500/20'}`}
-                    >
-                        {isActive ? 'Pausar Cronômetro' : 'Entrar em estado de Flow'}
-                    </button>
+                    <div className="flex gap-2 w-full">
+                        <button
+                            onClick={toggleTimer}
+                            className={`flex-1 py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg ${isActive ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-emerald-400 text-slate-900 shadow-emerald-500/20'}`}
+                        >
+                            {isActive ? 'Pausar' : 'Iniciar'}
+                        </button>
+                        <button
+                            onClick={onExitFocus}
+                            className="px-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all"
+                            title="Sair do Modo Foco"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>

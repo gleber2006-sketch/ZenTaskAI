@@ -57,6 +57,7 @@ const App: React.FC = () => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [manualFocusTask, setManualFocusTask] = useState<Task | null>(null);
   const [history, setHistory] = useState<{ role: 'user' | 'assistant'; text: string; hasFile?: boolean }[]>([
     { role: 'assistant', text: 'Sou seu assistente de tarefas com inteligência financeira integrada. Você pode digitar comandos ou anexar arquivos para criar fluxos completos.' }
   ]);
@@ -481,9 +482,14 @@ const App: React.FC = () => {
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
             {focusMode ? (
               <CurrentFocus
-                topTask={filteredTasks.find(t => t.status !== 'concluida') || filteredTasks[0]}
+                topTask={manualFocusTask || undefined}
+                tasks={filteredTasks}
+                onSelectFocusTask={setManualFocusTask}
                 onToggleStatus={handleToggleStatus}
-                onExitFocus={() => setFocusMode(false)}
+                onExitFocus={() => {
+                  setFocusMode(false);
+                  setManualFocusTask(null);
+                }}
               />
             ) : navMode === 'dashboard' ? (
               <DashboardView
