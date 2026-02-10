@@ -11,7 +11,6 @@ import { fetchCategories, forceResetCategories } from './services/categoryServic
 import { fetchTasks, deleteTask, deleteAllTasks, createTasksBulk, toggleTaskStatus, subscribeToTasks } from './services/taskService';
 import { processTaskCommand, FilePart } from './services/geminiService';
 import { ActionType, AIResponse } from './types';
-import StatsHero from './components/StatsHero';
 import CurrentFocus from './components/CurrentFocus';
 import SettingsModal from './components/SettingsModal';
 import Sidebar from './components/Layout/Sidebar';
@@ -19,6 +18,7 @@ import SharedTaskLanding from './components/SharedTaskLanding';
 import BoardView from './components/BoardView';
 import CommandBar from './components/CommandBar';
 import FilterModal from './components/FilterModal';
+import DashboardView from './components/DashboardView';
 import { Toaster, toast } from 'sonner';
 
 const App: React.FC = () => {
@@ -48,6 +48,7 @@ const App: React.FC = () => {
   const [customDate, setCustomDate] = useState('');
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
+  const [navMode, setNavMode] = useState<'tasks' | 'dashboard'>('tasks');
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -434,10 +435,15 @@ const App: React.FC = () => {
         setShowCategoryManager={setShowCategoryManager}
         setShowSettings={setShowSettings}
         activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
+        setActiveCategory={(cat) => {
+          setActiveCategory(cat);
+          setNavMode('tasks');
+        }}
         categories={categories}
         user={user}
         onLogout={handleLogout}
+        navMode={navMode}
+        setNavMode={setNavMode}
       />
 
       <main className={`flex-1 flex flex-col ${focusMode ? 'lg:flex' : 'lg:grid lg:grid-cols-12'} gap-0 md:gap-6 min-h-0 overflow-hidden pb-16 md:pb-0 transition-all duration-500`}>
@@ -449,15 +455,26 @@ const App: React.FC = () => {
               <svg className="w-5 h-5 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
-              Fluxo Central
+              {navMode === 'dashboard' ? 'Dashboard & Relatórios' : 'Fluxo Central'}
             </h2>
-            <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
-              <button onClick={() => setViewMode('list')} className={`p-1 rounded-md transition ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400'}`}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-              </button>
-              <button onClick={() => setViewMode('board')} className={`p-1 rounded-md transition ${viewMode === 'board' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400'}`}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM14 13a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
-              </button>
+            <div className="flex items-center gap-4">
+              {/* Eficiência Dinâmica (v1.10.0) */}
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200/50 dark:border-white/5 transition-all duration-500`}>
+                <svg className={`w-3.5 h-3.5 ${completionRate > 60 ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]' : completionRate > 30 ? 'text-yellow-500' : 'text-yellow-300 drop-shadow-[0_0_5px_rgba(253,224,71,0.8)]'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Eficiência</span>
+                <span className={`text-[11px] font-black ${completionRate > 60 ? 'text-emerald-400' : completionRate > 30 ? 'text-yellow-500' : 'text-yellow-300'}`}>
+                  {completionRate}%
+                </span>
+              </div>
+
+              <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
+                <button onClick={() => { setViewMode('list'); setNavMode('tasks'); }} className={`p-1 rounded-md transition ${viewMode === 'list' && navMode === 'tasks' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400'}`}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                </button>
+                <button onClick={() => { setViewMode('board'); setNavMode('tasks'); }} className={`p-1 rounded-md transition ${viewMode === 'board' && navMode === 'tasks' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400'}`}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM14 13a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -468,225 +485,228 @@ const App: React.FC = () => {
                 onToggleStatus={handleToggleStatus}
                 onExitFocus={() => setFocusMode(false)}
               />
-            ) : (
-              <StatsHero
+            ) : navMode === 'dashboard' ? (
+              <DashboardView
+                tasks={tasks}
                 activeTasksCount={activeTasks.length}
                 completionRate={completionRate}
                 highPriorityCount={highPriorityTasks.length}
                 upcomingCount={upcomingTasks.length}
               />
-            )}
+            ) : (
+              <>
 
-            <div className="mb-6 flex space-x-2 overflow-x-auto pb-2 no-scrollbar items-center">
-              {/* Botão de Filtro Mobile (Unificado) - Agora no início para visibilidade imediata */}
-              <button
-                onClick={() => setShowFilterModal(true)}
-                className="flex sm:hidden items-center gap-2 px-5 py-2 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest transition-all shrink-0 active:scale-95 shadow-lg shadow-indigo-600/20 mr-1"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
-                Filtros
-              </button>
-
-              {['Tudo', ...categories.map(c => c.id)].map(catId => {
-                const cat = categories.find(c => c.id === catId);
-                const isSelected = activeCategory === catId;
-                return (
+                <div className="mb-6 flex space-x-2 overflow-x-auto pb-2 no-scrollbar items-center">
+                  {/* Botão de Filtro Mobile (Unificado) - Agora no início para visibilidade imediata */}
                   <button
-                    key={catId}
-                    onClick={() => setActiveCategory(catId)}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shrink-0 border ${isSelected
-                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
-                      : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 hover:border-indigo-200'
-                      }`}
+                    onClick={() => setShowFilterModal(true)}
+                    className="flex sm:hidden items-center gap-2 px-5 py-2 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest transition-all shrink-0 active:scale-95 shadow-lg shadow-indigo-600/20 mr-1"
                   >
-                    {cat ? `${cat.icone} ${cat.nome}` : 'Tudo'}
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
+                    Filtros
                   </button>
-                );
-              })}
-            </div>
 
-            {/* Sub-Filters: Status & Priority - Native Select - Visible only on Desktop (sm+) */}
-            <div className="mb-6 hidden sm:flex flex-row gap-3">
-              {/* Status Select */}
-              <div className="relative flex-1">
-                <div className="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-700/30">
-                  <svg className="w-4 h-4 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
-                  <span className="uppercase tracking-widest text-[10px] text-slate-600 dark:text-slate-300 shrink-0">Status:</span>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-                    className="flex-1 bg-transparent text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px] font-bold focus:outline-none cursor-pointer"
-                  >
-                    <option value="Tudo">Todos</option>
-                    <option value="pendente">Pendente</option>
-                    <option value="em_progresso">Em Progresso</option>
-                    <option value="aguardando">Aguardando</option>
-                    <option value="bloqueada">Bloqueada</option>
-                    <option value="concluida">Concluída</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Priority Select */}
-              <div className="relative flex-1">
-                <div className="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-700/30">
-                  <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
-                  <span className="uppercase tracking-widest text-[10px] text-slate-600 dark:text-slate-300 shrink-0">Prioridade:</span>
-                  <select
-                    value={priorityFilter}
-                    onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
-                    className="flex-1 bg-transparent text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px] font-bold focus:outline-none cursor-pointer"
-                  >
-                    <option value="Tudo">Todas</option>
-                    <option value="baixa">Baixa</option>
-                    <option value="media">Média</option>
-                    <option value="alta">Alta</option>
-                    <option value="critica">Crítica</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Deadline Filter Select */}
-              <div className="relative flex-1">
-                <div className={`flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border transition-all ${deadlineFilter !== 'Tudo' ? 'border-indigo-500/50' : 'border-slate-200/20 dark:border-slate-700/30'}`}>
-                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  <span className="uppercase tracking-widest text-[10px] text-slate-600 dark:text-slate-300 shrink-0">Prazo:</span>
-                  <select
-                    value={deadlineFilter}
-                    onChange={(e) => setDeadlineFilter(e.target.value as typeof deadlineFilter)}
-                    className="flex-1 bg-transparent text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px] font-bold focus:outline-none cursor-pointer"
-                  >
-                    <option value="Tudo">Qualquer</option>
-                    <option value="recentes">Mais Próximos</option>
-                    <option value="antigos">Mais Distantes</option>
-                    <option value="custom">Escolher Dia...</option>
-                  </select>
-                </div>
-                {deadlineFilter === 'custom' && (
-                  <div className="absolute top-full left-0 right-0 mt-2 z-10 animate-in fade-in slide-in-from-top-1">
-                    <input
-                      type="date"
-                      value={customDate}
-                      onChange={(e) => setCustomDate(e.target.value)}
-                      className="w-full bg-white dark:bg-slate-800 border border-indigo-500/50 rounded-xl p-2 text-xs text-slate-700 dark:text-slate-200 shadow-xl focus:outline-none ring-2 ring-indigo-500/10"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Command Bar: Search & Quick Add (v1.5.0) */}
-            <CommandBar
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              onQuickAdd={handleQuickAdd}
-              onManualAdd={handleCreateTask}
-            />
-
-            {
-              isLoading && filteredTasks.length === 0 ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="h-[60px] bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse border border-slate-200/50 dark:border-slate-700/30"></div>
-                  ))}
-                </div>
-              ) : filteredTasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
-                  <div className="relative mb-6">
-                    <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full"></div>
-                    <div className="relative w-28 h-28 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-xl border border-slate-100 dark:border-slate-800 ring-1 ring-slate-200/50 dark:ring-slate-700/50">
-                      <svg className="w-14 h-14 text-indigo-500/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
-                    </div>
-                  </div>
-                  <h3 className="font-black text-xl text-slate-800 dark:text-white mb-2 tracking-tight">Produtividade Máxima</h3>
-                  <p className="text-sm text-slate-400 max-w-[200px] leading-relaxed mx-auto">Você completou todos os objetivos desta visão. Hora de planejar o próximo passo.</p>
-                  <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={handleCreateTask}
-                      className="px-6 py-2.5 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
-                    >
-                      Nova Tarefa
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveCategory('Tudo');
-                        setStatusFilter('Tudo');
-                        setPriorityFilter('Tudo');
-                        setDeadlineFilter('Tudo');
-                        setCustomDate('');
-                        setSearchTerm('');
-                      }}
-                      className="px-6 py-2.5 bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
-                    >
-                      Limpar Filtros
-                    </button>
-                  </div>
-                </div>
-              ) : viewMode === 'board' ? (
-                <BoardView
-                  tasks={filteredTasks}
-                  categories={categories}
-                  onEdit={handleEditTask}
-                  onDelete={handleDeleteTask}
-                  onToggleStatus={handleToggleStatus}
-                  onUpdateTask={handleUpdateTask}
-                />
-              ) : (
-                <div className="space-y-8 pb-8">
-                  {groupOrder.map(type => {
-                    const group = groupedTasks[type];
-                    if (!group || group.length === 0) return null;
+                  {['Tudo', ...categories.map(c => c.id)].map(catId => {
+                    const cat = categories.find(c => c.id === catId);
+                    const isSelected = activeCategory === catId;
                     return (
-                      <div key={type} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <div
-                          className="flex items-center gap-4 mb-4 cursor-pointer select-none group/header"
-                          onClick={() => toggleGroup(type)}
-                        >
-                          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 whitespace-nowrap group-hover/header:text-indigo-500 transition-colors">
-                            {type === 'meta' && "🎯 Metas Estratégicas"}
-                            {type === 'rotina' && "🔄 Rotinas"}
-                            {type === 'evento' && "📅 Compromissos"}
-                            {type === 'tarefa' && "⚡ Execução"}
-                            {type === 'finalizada' && "✅ Finalizadas"}
-                          </h3>
-                          <div className="h-px bg-slate-100 dark:bg-slate-800/60 flex-1"></div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded-full border border-slate-200/20 dark:border-slate-700/30">
-                              {group.length}
-                            </span>
-                            <svg
-                              className={`w-3 h-3 text-slate-300 transition-transform duration-300 ${collapsedGroups.includes(type) ? '-rotate-90' : ''}`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        </div>
-                        {!collapsedGroups.includes(type) && (
-                          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                            {group.map(task => (
-                              <TaskItem
-                                key={task.id}
-                                task={task}
-                                categories={categories}
-                                onEdit={handleEditTask}
-                                onDelete={handleDeleteTask}
-                                onToggleStatus={handleToggleStatus}
-                                onUpdateTask={handleUpdateTask}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <button
+                        key={catId}
+                        onClick={() => setActiveCategory(catId)}
+                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shrink-0 border ${isSelected
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
+                          : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 hover:border-indigo-200'
+                          }`}
+                      >
+                        {cat ? `${cat.icone} ${cat.nome}` : 'Tudo'}
+                      </button>
                     );
                   })}
                 </div>
-              )
-            }
+
+                {/* Sub-Filters: Status & Priority - Native Select - Visible only on Desktop (sm+) */}
+                <div className="mb-6 hidden sm:flex flex-row gap-3">
+                  {/* Status Select */}
+                  <div className="relative flex-1">
+                    <div className="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-700/30">
+                      <svg className="w-4 h-4 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
+                      <span className="uppercase tracking-widest text-[10px] text-slate-600 dark:text-slate-300 shrink-0">Status:</span>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+                        className="flex-1 bg-transparent text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px] font-bold focus:outline-none cursor-pointer"
+                      >
+                        <option value="Tudo">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="em_progresso">Em Progresso</option>
+                        <option value="aguardando">Aguardando</option>
+                        <option value="bloqueada">Bloqueada</option>
+                        <option value="concluida">Concluída</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Priority Select */}
+                  <div className="relative flex-1">
+                    <div className="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-700/30">
+                      <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
+                      <span className="uppercase tracking-widest text-[10px] text-slate-600 dark:text-slate-300 shrink-0">Prioridade:</span>
+                      <select
+                        value={priorityFilter}
+                        onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
+                        className="flex-1 bg-transparent text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px] font-bold focus:outline-none cursor-pointer"
+                      >
+                        <option value="Tudo">Todas</option>
+                        <option value="baixa">Baixa</option>
+                        <option value="media">Média</option>
+                        <option value="alta">Alta</option>
+                        <option value="critica">Crítica</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Deadline Filter Select */}
+                  <div className="relative flex-1">
+                    <div className={`flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border transition-all ${deadlineFilter !== 'Tudo' ? 'border-indigo-500/50' : 'border-slate-200/20 dark:border-slate-700/30'}`}>
+                      <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      <span className="uppercase tracking-widest text-[10px] text-slate-600 dark:text-slate-300 shrink-0">Prazo:</span>
+                      <select
+                        value={deadlineFilter}
+                        onChange={(e) => setDeadlineFilter(e.target.value as typeof deadlineFilter)}
+                        className="flex-1 bg-transparent text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px] font-bold focus:outline-none cursor-pointer"
+                      >
+                        <option value="Tudo">Qualquer</option>
+                        <option value="recentes">Mais Próximos</option>
+                        <option value="antigos">Mais Distantes</option>
+                        <option value="custom">Escolher Dia...</option>
+                      </select>
+                    </div>
+                    {deadlineFilter === 'custom' && (
+                      <div className="absolute top-full left-0 right-0 mt-2 z-10 animate-in fade-in slide-in-from-top-1">
+                        <input
+                          type="date"
+                          value={customDate}
+                          onChange={(e) => setCustomDate(e.target.value)}
+                          className="w-full bg-white dark:bg-slate-800 border border-indigo-500/50 rounded-xl p-2 text-xs text-slate-700 dark:text-slate-200 shadow-xl focus:outline-none ring-2 ring-indigo-500/10"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Command Bar: Search & Quick Add (v1.5.0) */}
+                <CommandBar
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  onQuickAdd={handleQuickAdd}
+                  onManualAdd={handleCreateTask}
+                />
+
+                {
+                  isLoading && filteredTasks.length === 0 ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="h-[60px] bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse border border-slate-200/50 dark:border-slate-700/30"></div>
+                      ))}
+                    </div>
+                  ) : filteredTasks.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
+                      <div className="relative mb-6">
+                        <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full"></div>
+                        <div className="relative w-28 h-28 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-xl border border-slate-100 dark:border-slate-800 ring-1 ring-slate-200/50 dark:ring-slate-700/50">
+                          <svg className="w-14 h-14 text-indigo-500/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                        </div>
+                      </div>
+                      <h3 className="font-black text-xl text-slate-800 dark:text-white mb-2 tracking-tight">Produtividade Máxima</h3>
+                      <p className="text-sm text-slate-400 max-w-[200px] leading-relaxed mx-auto">Você completou todos os objetivos desta visão. Hora de planejar o próximo passo.</p>
+                      <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                        <button
+                          onClick={handleCreateTask}
+                          className="px-6 py-2.5 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                        >
+                          Nova Tarefa
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActiveCategory('Tudo');
+                            setStatusFilter('Tudo');
+                            setPriorityFilter('Tudo');
+                            setDeadlineFilter('Tudo');
+                            setCustomDate('');
+                            setSearchTerm('');
+                          }}
+                          className="px-6 py-2.5 bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
+                        >
+                          Limpar Filtros
+                        </button>
+                      </div>
+                    </div>
+                  ) : viewMode === 'board' ? (
+                    <BoardView
+                      tasks={filteredTasks}
+                      categories={categories}
+                      onEdit={handleEditTask}
+                      onDelete={handleDeleteTask}
+                      onToggleStatus={handleToggleStatus}
+                      onUpdateTask={handleUpdateTask}
+                    />
+                  ) : (
+                    <div className="space-y-8 pb-8">
+                      {groupOrder.map(type => {
+                        const group = groupedTasks[type];
+                        if (!group || group.length === 0) return null;
+                        return (
+                          <div key={type} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <div
+                              className="flex items-center gap-4 mb-4 cursor-pointer select-none group/header"
+                              onClick={() => toggleGroup(type)}
+                            >
+                              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 whitespace-nowrap group-hover/header:text-indigo-500 transition-colors">
+                                {type === 'meta' && "🎯 Metas Estratégicas"}
+                                {type === 'rotina' && "🔄 Rotinas"}
+                                {type === 'evento' && "📅 Compromissos"}
+                                {type === 'tarefa' && "⚡ Execução"}
+                                {type === 'finalizada' && "✅ Finalizadas"}
+                              </h3>
+                              <div className="h-px bg-slate-100 dark:bg-slate-800/60 flex-1"></div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded-full border border-slate-200/20 dark:border-slate-700/30">
+                                  {group.length}
+                                </span>
+                                <svg
+                                  className={`w-3 h-3 text-slate-300 transition-transform duration-300 ${collapsedGroups.includes(type) ? '-rotate-90' : ''}`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                            {!collapsedGroups.includes(type) && (
+                              <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                {group.map(task => (
+                                  <TaskItem
+                                    key={task.id}
+                                    task={task}
+                                    categories={categories}
+                                    onEdit={handleEditTask}
+                                    onDelete={handleDeleteTask}
+                                    onToggleStatus={handleToggleStatus}
+                                    onUpdateTask={handleUpdateTask}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+              </>
+            )}
           </div>
         </section>
 

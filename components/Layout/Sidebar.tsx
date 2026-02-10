@@ -14,6 +14,8 @@ interface SidebarProps {
     categories: Category[];
     user: User | null;
     onLogout: () => void;
+    navMode: 'tasks' | 'dashboard';
+    setNavMode: (mode: 'tasks' | 'dashboard') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -28,6 +30,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     categories,
     user,
     onLogout,
+    navMode,
+    setNavMode
 }) => {
     return (
         <aside className={`w-64 bg-slate-900 dark:bg-slate-950 text-white flex flex-col shrink-0 transition-all z-20 ${focusMode ? 'hidden' : 'hidden md:flex'} border-r border-slate-800`}>
@@ -54,15 +58,25 @@ const Sidebar: React.FC<SidebarProps> = ({
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                         )}
                     </div>
-                    <span className="font-bold tracking-tight">Modo {darkMode ? 'Claro' : 'Escuro'}</span>
+                    <span className="font-bold tracking-tight text-[11px] uppercase tracking-[0.1em]">Modo {darkMode ? 'Claro' : 'Escuro'}</span>
                 </button>
 
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium bg-slate-800 text-white rounded-md shadow-sm border border-slate-700/50">
-                    <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                <button
+                    onClick={() => setNavMode('dashboard')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-all border ${navMode === 'dashboard' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800 border-transparent'}`}
+                >
+                    <svg className={`w-5 h-5 ${navMode === 'dashboard' ? 'text-white' : 'text-indigo-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                     Dashboard
                 </button>
-                <button onClick={() => setShowCategoryManager(true)} className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-md transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                <button
+                    onClick={() => setNavMode('tasks')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-all border ${navMode === 'tasks' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800 border-transparent'}`}
+                >
+                    <svg className={`w-5 h-5 ${navMode === 'tasks' ? 'text-white' : 'text-indigo-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                    Fluxo Central
+                </button>
+                <button onClick={() => setShowCategoryManager(true)} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-xl transition-colors">
+                    <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                     Workspaces
                 </button>
                 <button
