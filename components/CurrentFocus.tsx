@@ -54,28 +54,28 @@ const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, on
     // Filtra tarefas elegíveis para seleção (não concluídas)
     const availableTasks = tasks.filter(t => !t.concluida);
 
-    // MODO IMERSIVO (ZEN WAVES v1.14.1)
+    // MODO IMERSIVO (ZEN WAVES v1.14.2)
     if (isActive) {
         return (
             <div
                 onClick={() => setIsActive(false)}
                 className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer overflow-hidden animate-in fade-in duration-1000"
             >
-                {/* Ondas Tecnológicas (Tech Flow) */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+                {/* Ondas Tecnológicas (Tech Flow) - Opacidade Aumentada e Bordas Mais Grossas */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     {/* Orbital 1 - Lento */}
-                    <div className="absolute w-[80vw] h-[80vw] md:w-[45rem] md:h-[45rem] border border-dashed border-white/5 rounded-full animate-[spin_60s_linear_infinite]"></div>
+                    <div className="absolute w-[80vw] h-[80vw] md:w-[45rem] md:h-[45rem] border-2 border-dashed border-white/20 rounded-full animate-[spin_60s_linear_infinite]"></div>
                     {/* Orbital 2 - Médio Reverso */}
-                    <div className="absolute w-[60vw] h-[60vw] md:w-[35rem] md:h-[35rem] border border-dotted border-indigo-500/20 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
+                    <div className="absolute w-[60vw] h-[60vw] md:w-[35rem] md:h-[35rem] border-2 border-dotted border-indigo-500/40 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
                     {/* Orbital 3 - Pulso Central */}
-                    <div className="absolute w-[40vw] h-[40vw] md:w-[25rem] md:h-[25rem] border border-white/10 rounded-full animate-pulse"></div>
+                    <div className="absolute w-[40vw] h-[40vw] md:w-[25rem] md:h-[25rem] border-2 border-white/30 rounded-full animate-pulse"></div>
                     {/* Orbital 4 - Ping Etereo */}
-                    <div className="absolute w-[30vw] h-[30vw] md:w-[20rem] md:h-[20rem] border border-purple-500/30 rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+                    <div className="absolute w-[30vw] h-[30vw] md:w-[20rem] md:h-[20rem] border-2 border-purple-500/40 rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
                 </div>
 
                 {/* Texto Central */}
                 <div className="relative z-10 text-center space-y-8 px-4">
-                    {/* Timer Responsivo - Ajustado para caber no mobile */}
+                    {/* Timer Responsivo */}
                     <div className="text-7xl sm:text-9xl md:text-[10rem] lg:text-[12rem] leading-none font-thin text-white/90 font-mono tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] select-none transition-all duration-300">
                         {formatTime(timeLeft)}
                     </div>
@@ -94,7 +94,8 @@ const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, on
                     </div>
                 </div>
 
-                <div className="absolute bottom-12 text-white/10 text-[10px] uppercase tracking-widest animate-bounce">
+                {/* Texto de Rodapé - Estilo Unificado */}
+                <div className="absolute bottom-12 text-white/40 text-[10px] uppercase tracking-[0.2em] font-light animate-pulse">
                     Toque para acordar
                 </div>
             </div>
