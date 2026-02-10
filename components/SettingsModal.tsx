@@ -1,5 +1,6 @@
 import React from 'react';
 import { User } from 'firebase/auth';
+import { toast } from 'sonner';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -25,11 +26,34 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     showSupport,
     setShowSupport,
     onLogout,
-    darkMode,
     setDarkMode,
 }) => {
-    console.log("⚙️ SettingsModal v1.3.2 loaded");
+    console.log("⚙️ SettingsModal v1.16.0 loaded");
     if (!isOpen || !user) return null;
+
+    const handleShare = async () => {
+        const shareData = {
+            title: 'ZenTask Pro',
+            text: 'Descubra o foco absoluto com ZenTask Pro! 🚀',
+            url: window.location.origin
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+                toast.success('Convite enviado com sucesso! 🚀');
+            } catch (err) {
+                console.log('Compartilhamento cancelado ou falhou:', err);
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+                toast.success('Link copiado! Envie para seus amigos. 📋');
+            } catch (err) {
+                toast.error('Erro ao copiar link.');
+            }
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
@@ -173,35 +197,56 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 </div>
 
-                {/* Botão de Sair (Logout) */}
-                <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 shrink-0">
-                    <button
-                        onClick={() => {
-                            if (window.confirm("Deseja realmente sair da sua conta?")) {
-                                onLogout();
-                                onClose();
-                            }
-                        }}
-                        className="w-full flex items-center justify-between p-4 rounded-[1.5rem] bg-rose-500/5 dark:bg-rose-500/10 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 border border-rose-500/20 dark:border-rose-500/30 group transition-all active:scale-[0.98] shadow-sm hover:shadow-rose-500/5"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-2xl group-hover:scale-110 transition-transform shadow-sm border border-rose-100 dark:border-rose-500/30">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
-                            </div>
-                            <div className="text-left">
-                                <p className="text-base font-black text-rose-600 dark:text-rose-400">Sair da Sessão</p>
-                                <p className="text-[10px] text-rose-500/60 dark:text-rose-400/50 font-bold uppercase tracking-wider">Encerrar acesso agora</p>
-                            </div>
+            </div>
+
+            {/* Seção de Convite (v1.16.0) */}
+            <div className="mt-4 shrink-0">
+                <button
+                    onClick={handleShare}
+                    className="w-full flex items-center justify-between p-4 rounded-[1.5rem] bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 hover:from-violet-500/20 hover:to-fuchsia-500/20 border border-violet-500/20 group transition-all active:scale-[0.98] shadow-sm"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white dark:bg-slate-800 text-violet-600 dark:text-violet-400 rounded-2xl group-hover:scale-110 transition-transform shadow-sm">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
                         </div>
-                        <svg className="w-5 h-5 text-rose-300 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-                </div>
+                        <div className="text-left">
+                            <p className="text-base font-black text-slate-800 dark:text-slate-100">Convidar Amigos</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Espalhe a produtividade</p>
+                        </div>
+                    </div>
+                    <svg className="w-5 h-5 text-violet-400 group-hover:text-violet-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+
+            {/* Botão de Sair (Logout) */}
+            <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 shrink-0">
+                <button
+                    onClick={() => {
+                        if (window.confirm("Deseja realmente sair da sua conta?")) {
+                            onLogout();
+                            onClose();
+                        }
+                    }}
+                    className="w-full flex items-center justify-between p-4 rounded-[1.5rem] bg-rose-500/5 dark:bg-rose-500/10 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 border border-rose-500/20 dark:border-rose-500/30 group transition-all active:scale-[0.98] shadow-sm hover:shadow-rose-500/5"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-2xl group-hover:scale-110 transition-transform shadow-sm border border-rose-100 dark:border-rose-500/30">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </div>
+                        <div className="text-left">
+                            <p className="text-base font-black text-rose-600 dark:text-rose-400">Sair da Sessão</p>
+                            <p className="text-[10px] text-rose-500/60 dark:text-rose-400/50 font-bold uppercase tracking-wider">Encerrar acesso agora</p>
+                        </div>
+                    </div>
+                    <svg className="w-5 h-5 text-rose-300 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
             </div>
         </div>
+        </div >
     );
 };
 
