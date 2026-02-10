@@ -58,6 +58,7 @@ const App: React.FC = () => {
   const [showSupport, setShowSupport] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [manualFocusTask, setManualFocusTask] = useState<Task | null>(null);
+  const [isEfficiencyExpanded, setIsEfficiencyExpanded] = useState(false); // v1.15.1
   const [history, setHistory] = useState<{ role: 'user' | 'assistant'; text: string; hasFile?: boolean }[]>([
     { role: 'assistant', text: 'Sou seu assistente de tarefas com inteligência financeira integrada. Você pode digitar comandos ou anexar arquivos para criar fluxos completos.' }
   ]);
@@ -459,14 +460,19 @@ const App: React.FC = () => {
               {navMode === 'dashboard' ? 'Dashboard & Relatórios' : 'Fluxo Central'}
             </h2>
             <div className="flex items-center gap-4">
-              {/* Eficiência Dinâmica (v1.10.0) */}
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200/50 dark:border-white/5 transition-all duration-500`}>
+              {/* Eficiência Dinâmica (v1.15.1) */}
+              <button
+                onClick={() => setIsEfficiencyExpanded(!isEfficiencyExpanded)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200/50 dark:border-white/5 transition-all duration-500 active:scale-95`}
+              >
                 <svg className={`w-3.5 h-3.5 ${completionRate > 60 ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]' : completionRate > 30 ? 'text-yellow-500' : 'text-yellow-300 drop-shadow-[0_0_5px_rgba(253,224,71,0.8)]'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Eficiência</span>
+                <span className={`text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 transition-all duration-300 overflow-hidden ${isEfficiencyExpanded ? 'w-auto opacity-100 ml-1' : 'w-0 opacity-0 md:w-auto md:opacity-100 md:ml-0'}`}>
+                  Eficiência
+                </span>
                 <span className={`text-[11px] font-black ${completionRate > 60 ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]' : completionRate > 30 ? 'text-yellow-500' : 'text-yellow-300 drop-shadow-[0_0_8px_rgba(253,224,71,0.5)]'}`}>
                   {completionRate}%
                 </span>
-              </div>
+              </button>
 
               <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
                 <button onClick={() => { setViewMode('list'); setNavMode('tasks'); }} className={`p-1 rounded-md transition ${viewMode === 'list' && navMode === 'tasks' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400'}`}>
@@ -477,15 +483,19 @@ const App: React.FC = () => {
                 </button>
               </div>
 
-              {/* Dark Mode Toggle (Mobile Only) */}
+              {/* Dark Mode Toggle (Mobile Only - Enhanced v1.15.1) */}
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className="md:hidden flex items-center justify-center w-10 h-6 rounded-full bg-slate-200 dark:bg-slate-700 transition-colors relative"
+                className="md:hidden flex items-center justify-center w-14 h-8 rounded-full bg-slate-200 dark:bg-slate-700 transition-all duration-300 relative shadow-inner hover:shadow-md active:scale-95"
                 aria-label="Alternar Modo Escuro"
               >
-                <div className={`absolute left-1 w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform duration-300 ${darkMode ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                <svg className={`w-3 h-3 text-yellow-500 absolute left-1.5 transition-opacity ${darkMode ? 'opacity-0' : 'opacity-100'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                <svg className={`w-3 h-3 text-indigo-300 absolute right-1.5 transition-opacity ${!darkMode ? 'opacity-0' : 'opacity-100'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                <div className={`absolute left-1 w-6 h-6 bg-white dark:bg-slate-800 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${darkMode ? 'translate-x-6' : 'translate-x-0'}`}>
+                  {darkMode ? (
+                    <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                  )}
+                </div>
               </button>
             </div>
           </div>
