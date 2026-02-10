@@ -19,6 +19,7 @@ import SharedTaskLanding from './components/SharedTaskLanding';
 import BoardView from './components/BoardView';
 import CommandBar from './components/CommandBar';
 import FilterModal from './components/FilterModal';
+import { Toaster, toast } from 'sonner';
 
 const App: React.FC = () => {
   console.log("🚀 ZenTaskAI v1.3.9 - Premium UI Definition");
@@ -60,6 +61,8 @@ const App: React.FC = () => {
   ]);
   const historyEndRef = React.useRef<HTMLDivElement>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const prevTasksRef = React.useRef<Task[]>([]);
+  const notifiedDeadlinesRef = React.useRef<Set<string>>(new Set());
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined' && localStorage.theme) return localStorage.theme === 'dark';
     if (typeof window !== 'undefined') return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -112,6 +115,35 @@ const App: React.FC = () => {
 
     console.log("🔄 Iniciando sincronização em tempo real das tarefas...");
     const unsubscribe = subscribeToTasks(user.uid, (updatedTasks) => {
+      // Check for Notifications (v1.9.0)
+      updatedTasks.forEach(task => {
+        const prevTask = prevTasksRef.current.find(t => t.id === task.id);
+
+        // 1. External Completion Alert
+        if (task.status === 'concluida' && prevTask && prevTask.status !== 'concluida' && task.metadata?.completed_by_external) {
+          toast.success(`✓ ${task.metadata.external_completer_name || 'Alguém'} concluiu: ${task.titulo}`, {
+            description: 'Tarefa atribuída foi finalizada.',
+            duration: 8000,
+          });
+        }
+
+        // 2. Deadline approaching alert (Within 24h)
+        if (task.prazo && task.status !== 'concluida' && !notifiedDeadlinesRef.current.has(task.id)) {
+          const deadlineDate = task.prazo.toDate ? task.prazo.toDate() : new Date((task.prazo.seconds || 0) * 1000);
+          const now = new Date();
+          const diffHours = (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+          if (diffHours > 0 && diffHours <= 24) {
+            toast.warning(`⚡ Prazo Próximo: ${task.titulo}`, {
+              description: `Vence em aproximadamente ${Math.round(diffHours)} horas.`,
+              duration: 10000,
+            });
+            notifiedDeadlinesRef.current.add(task.id);
+          }
+        }
+      });
+
+      prevTasksRef.current = updatedTasks;
       setTasks(updatedTasks);
       setLoading(false);
     });
@@ -841,6 +873,7 @@ const App: React.FC = () => {
           setCustomDate('');
         }}
       />
+      <Toaster position="top-right" richColors expand={true} closeButton />
     </div >
   );
 };
