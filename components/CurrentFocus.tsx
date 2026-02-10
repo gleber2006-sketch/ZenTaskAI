@@ -54,33 +54,39 @@ const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, on
     // Filtra tarefas elegíveis para seleção (não concluídas)
     const availableTasks = tasks.filter(t => !t.concluida);
 
-    // MODO IMERSIVO (ZEN WAVES)
+    // MODO IMERSIVO (ZEN WAVES v1.14.1)
     if (isActive) {
         return (
             <div
                 onClick={() => setIsActive(false)}
                 className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer overflow-hidden animate-in fade-in duration-1000"
             >
-                {/* Ondas de Energia (Pulse Rings) */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="absolute w-64 h-64 border border-indigo-500/20 rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
-                    <div className="absolute w-96 h-96 border border-purple-500/10 rounded-full animate-[ping_5s_cubic-bezier(0,0,0.2,1)_infinite] delay-1000"></div>
-                    <div className="absolute w-[30rem] h-[30rem] border border-blue-500/5 rounded-full animate-[ping_7s_cubic-bezier(0,0,0.2,1)_infinite] delay-2000"></div>
+                {/* Ondas Tecnológicas (Tech Flow) */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+                    {/* Orbital 1 - Lento */}
+                    <div className="absolute w-[80vw] h-[80vw] md:w-[45rem] md:h-[45rem] border border-dashed border-white/5 rounded-full animate-[spin_60s_linear_infinite]"></div>
+                    {/* Orbital 2 - Médio Reverso */}
+                    <div className="absolute w-[60vw] h-[60vw] md:w-[35rem] md:h-[35rem] border border-dotted border-indigo-500/20 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
+                    {/* Orbital 3 - Pulso Central */}
+                    <div className="absolute w-[40vw] h-[40vw] md:w-[25rem] md:h-[25rem] border border-white/10 rounded-full animate-pulse"></div>
+                    {/* Orbital 4 - Ping Etereo */}
+                    <div className="absolute w-[30vw] h-[30vw] md:w-[20rem] md:h-[20rem] border border-purple-500/30 rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
                 </div>
 
                 {/* Texto Central */}
-                <div className="relative z-10 text-center space-y-8">
-                    <div className="text-[12rem] leading-none font-thin text-white/90 font-mono tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] select-none">
+                <div className="relative z-10 text-center space-y-8 px-4">
+                    {/* Timer Responsivo - Ajustado para caber no mobile */}
+                    <div className="text-7xl sm:text-9xl md:text-[10rem] lg:text-[12rem] leading-none font-thin text-white/90 font-mono tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] select-none transition-all duration-300">
                         {formatTime(timeLeft)}
                     </div>
 
                     <div className="space-y-4">
-                        <p className="text-white/40 text-sm uppercase tracking-[0.5em] font-light animate-pulse">
+                        <p className="text-white/40 text-xs md:text-sm uppercase tracking-[0.5em] font-light animate-pulse">
                             {mode === 'work' ? 'Estado de Flow' : 'Recarregando'}
                         </p>
                         {topTask && (
-                            <div className="max-w-md mx-auto px-4">
-                                <p className="text-white/30 text-xs tracking-widest line-clamp-1 border-t border-white/10 pt-4">
+                            <div className="max-w-xs md:max-w-md mx-auto px-4">
+                                <p className="text-white/30 text-[10px] md:text-xs tracking-widest line-clamp-1 border-t border-white/10 pt-4">
                                     {topTask.titulo}
                                 </p>
                             </div>
@@ -89,7 +95,7 @@ const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, on
                 </div>
 
                 <div className="absolute bottom-12 text-white/10 text-[10px] uppercase tracking-widest animate-bounce">
-                    Toque na tela para pausar
+                    Toque para acordar
                 </div>
             </div>
         );
