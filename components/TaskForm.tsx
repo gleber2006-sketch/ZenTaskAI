@@ -227,15 +227,15 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
+            <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-w-lg sm:rounded-[2.5rem] rounded-none shadow-2xl border-x-0 sm:border border-slate-300 dark:border-slate-800 flex flex-col sm:max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-10 sm:slide-in-from-none duration-500">
 
-                <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
                         {existingTask ? 'Editar Tarefa' : 'Nova Tarefa'}
                     </h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button onClick={onClose} className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl transition-all active:scale-95 border border-slate-100 dark:border-slate-700/50">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
@@ -243,12 +243,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                     <form id="task-form" onSubmit={handleSubmit} className="space-y-4">
 
                         {/* Title */}
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Título</label>
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Título do Objetivo</label>
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
                                 placeholder="O que precisa ser feito?"
                                 value={titulo}
                                 onChange={e => setTitulo(e.target.value)}
@@ -256,13 +256,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                         </div>
 
                         {/* Description / Checklist */}
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Conteúdo da Tarefa</label>
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Conteúdo e Detalhes</label>
                             {subcategories.find(s => s.id === subcategoriaId)?.nome?.trim().toLowerCase() === 'compras' ? (
                                 <ChecklistEditor />
                             ) : (
                                 <textarea
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white min-h-[120px]"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white min-h-[120px] transition-all"
                                     placeholder="Detalhes adicionais..."
                                     value={descricao}
                                     onChange={e => setDescricao(e.target.value)}
@@ -271,12 +271,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                         </div>
 
                         {/* Grid 1: Category & Sub */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Categoria *</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Categoria *</label>
                                 <select
                                     required
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full bg-indigo-50/30 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-black outline-none dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
                                     value={categoriaId}
                                     onChange={e => setCategoriaId(e.target.value)}
                                 >
@@ -286,10 +286,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                                     ))}
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Subcategoria</label>
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Subcategoria</label>
                                 <select
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-black outline-none dark:text-white focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                                     value={subcategoriaId}
                                     onChange={e => setSubcategoriaId(e.target.value)}
                                     disabled={!categoriaId || subcategories.length === 0}
@@ -303,32 +303,31 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                         </div>
 
                         {/* Grid 2: Priority & Status */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Prioridade</label>
-                                <div className="flex gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Prioridade</label>
+                                <div className="flex gap-2 bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl p-2.5 transition-all">
                                     {(['baixa', 'media', 'alta', 'critica'] as const).map(p => (
                                         <button
                                             key={p}
                                             type="button"
                                             onClick={() => setPrioridade(p)}
-                                            className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all ${prioridade === p ? 'ring-2 ring-offset-2 ring-indigo-500 dark:ring-offset-slate-900 scale-110' : 'opacity-50 hover:opacity-100'}
-                          ${p === 'baixa' ? 'bg-slate-400 border-slate-500' : ''}
-                          ${p === 'media' ? 'bg-amber-400 border-amber-500' : ''}
-                          ${p === 'alta' ? 'bg-orange-500 border-orange-600' : ''}
-                          ${p === 'critica' ? 'bg-red-600 border-red-700' : ''}
-                        `}
+                                            className={`flex-1 h-8 rounded-xl flex items-center justify-center border-2 transition-all ${prioridade === p ? 'ring-2 ring-offset-2 ring-indigo-500 dark:ring-offset-slate-900 scale-105 z-10' : 'opacity-40 hover:opacity-80 scale-100'}
+                                                ${p === 'baixa' ? 'bg-slate-400 border-slate-500' : ''}
+                                                ${p === 'media' ? 'bg-amber-400 border-amber-500' : ''}
+                                                ${p === 'alta' ? 'bg-orange-500 border-orange-600' : ''}
+                                                ${p === 'critica' ? 'bg-red-600 border-red-700' : ''}
+                                            `}
                                             title={p}
                                         />
                                     ))}
-                                    <span className="text-xs text-slate-500 self-center capitalize ml-1">{prioridade}</span>
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Status</label>
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Status do Fluxo</label>
                                 <select
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white capitalize"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-black outline-none dark:text-white capitalize cursor-pointer transition-all"
                                     value={status}
                                     onChange={e => setStatus(e.target.value as TaskStatus)}
                                 >
@@ -342,11 +341,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                         </div>
 
                         {/* Grid 3: Tipo & Prazo */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipo de Registro</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Registro</label>
                                 <select
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white capitalize"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-black outline-none dark:text-white capitalize cursor-pointer transition-all"
                                     value={tipo}
                                     onChange={e => setTipo(e.target.value as TaskType)}
                                 >
@@ -356,11 +355,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                                     <option value="meta">Meta</option>
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Prazo / Data</label>
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Prazo / Agendamento</label>
                                 <input
                                     type="date"
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm outline-none dark:text-white"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-black outline-none dark:text-white cursor-pointer transition-all"
                                     value={prazo}
                                     onChange={e => setPrazo(e.target.value)}
                                 />
@@ -399,17 +398,17 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                     </form>
                 </div>
 
-                <div className="p-5 pb-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
-                    <button type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition">
+                <div className="p-6 pb-10 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-3 bg-slate-50 dark:bg-slate-900/50 shrink-0">
+                    <button type="button" onClick={onClose} className="w-full sm:w-auto px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-2xl transition-all active:scale-95">
                         Cancelar
                     </button>
                     <button
                         type="submit"
                         form="task-form"
                         disabled={loading}
-                        className="w-full sm:w-auto px-8 py-3 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg shadow-indigo-600/25 transition active:scale-95 disabled:opacity-50"
+                        className="w-full sm:w-auto px-10 py-4 text-xs font-black uppercase tracking-widest text-white bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-xl shadow-indigo-600/30 transition-all active:scale-95 disabled:opacity-50"
                     >
-                        {loading ? 'Salvando...' : 'Salvar Tarefa'}
+                        {loading ? 'Salvando...' : 'Salvar Objetivo'}
                     </button>
                 </div>
 

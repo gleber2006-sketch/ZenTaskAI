@@ -32,14 +32,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     if (!isOpen || !user) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
-            <div className={`relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] p-7 border border-slate-200/60 dark:border-slate-800 overflow-hidden ring-1 ring-black/5 dark:ring-white/5`} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
+            <div className={`relative w-full h-full sm:h-auto sm:max-w-md bg-white dark:bg-slate-900 sm:rounded-[2.5rem] rounded-none shadow-2xl p-6 sm:p-8 border-x-0 border-t-0 sm:border border-slate-300 dark:border-slate-800 flex flex-col overflow-hidden ring-1 ring-black/5 dark:ring-white/5 animate-in slide-in-from-bottom-10 sm:slide-in-from-none duration-500`} onClick={e => e.stopPropagation()}>
 
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-8 shrink-0">
                     <div>
-                        <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Ajustes</h3>
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">ZenTask Workspace v1.3.8</p>
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Ajustes</h3>
+                        <p className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em]">ZenTask Workspace v1.8.0</p>
                     </div>
                     <button onClick={onClose} className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-2xl transition-all active:scale-95 border border-slate-100 dark:border-slate-700/50">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
