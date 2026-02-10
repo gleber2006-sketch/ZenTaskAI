@@ -54,6 +54,47 @@ const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, on
     // Filtra tarefas elegíveis para seleção (não concluídas)
     const availableTasks = tasks.filter(t => !t.concluida);
 
+    // MODO IMERSIVO (ZEN WAVES)
+    if (isActive) {
+        return (
+            <div
+                onClick={() => setIsActive(false)}
+                className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer overflow-hidden animate-in fade-in duration-1000"
+            >
+                {/* Ondas de Energia (Pulse Rings) */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="absolute w-64 h-64 border border-indigo-500/20 rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+                    <div className="absolute w-96 h-96 border border-purple-500/10 rounded-full animate-[ping_5s_cubic-bezier(0,0,0.2,1)_infinite] delay-1000"></div>
+                    <div className="absolute w-[30rem] h-[30rem] border border-blue-500/5 rounded-full animate-[ping_7s_cubic-bezier(0,0,0.2,1)_infinite] delay-2000"></div>
+                </div>
+
+                {/* Texto Central */}
+                <div className="relative z-10 text-center space-y-8">
+                    <div className="text-[12rem] leading-none font-thin text-white/90 font-mono tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] select-none">
+                        {formatTime(timeLeft)}
+                    </div>
+
+                    <div className="space-y-4">
+                        <p className="text-white/40 text-sm uppercase tracking-[0.5em] font-light animate-pulse">
+                            {mode === 'work' ? 'Estado de Flow' : 'Recarregando'}
+                        </p>
+                        {topTask && (
+                            <div className="max-w-md mx-auto px-4">
+                                <p className="text-white/30 text-xs tracking-widest line-clamp-1 border-t border-white/10 pt-4">
+                                    {topTask.titulo}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="absolute bottom-12 text-white/10 text-[10px] uppercase tracking-widest animate-bounce">
+                    Toque na tela para pausar
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="mb-8 p-6 md:p-8 rounded-[3rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-600/30 relative overflow-hidden group border border-white/10 animate-in slide-in-from-top-4 duration-700">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-white/10 transition-all duration-700"></div>
