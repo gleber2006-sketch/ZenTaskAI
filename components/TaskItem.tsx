@@ -314,13 +314,22 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
               onClick={async (e) => {
                 e.stopPropagation();
                 const { updateTask } = await import('../services/taskService');
-                if (!task.shared) {
-                  await updateTask(task.id, { shared: true });
-                }
+                const { auth } = await import('../services/firebase');
+
+                // Captura o nome do atribuidor (prioridade para displayName)
+                const creatorName = auth.currentUser?.displayName ||
+                  auth.currentUser?.email?.split('@')[0] ||
+                  'Um usuário do ZenTask';
+
+                // Garante que a tarefa está pública e tem o nome de quem atribuiu
+                await updateTask(task.id, {
+                  shared: true,
+                  criada_por_nome: creatorName
+                });
 
                 const shareUrl = `${window.location.origin}/?task=${task.id}`;
-                const shareTitle = 'ZenTask Pro | Tarefa Atribuída';
-                const shareText = `⚡ Atribuí uma tarefa para você: ${task.titulo}. Visualize e conclua aqui:`;
+                const shareTitle = `ZenTask Pro | Tarefa Atribuída por ${creatorName}`;
+                const shareText = `⚡ ${creatorName} atribuiu uma tarefa para você: ${task.titulo}. Visualize e conclua aqui:`;
 
                 if (navigator.share) {
                   try {

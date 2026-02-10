@@ -1,40 +1,52 @@
 export async function onRequest(context) {
-    const { request, env, next } = context;
+    const { request, next } = context;
     const url = new URL(request.url);
     const taskId = url.searchParams.get('task');
 
-    // Se não houver taskId, segue o fluxo normal
+    // Se não houver taskId, segue o fluxo normal (SPA carrega index.html padrão)
     if (!taskId) {
         return next();
     }
 
-    // Busca o HTML original
+    // Busca o HTML original para servir de base para o HTMLRewriter
     const response = await next();
 
     try {
-        // Busca dados da tarefa via Firestore REST API (v1)
-        // URL format: https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/tasks/{task_id}
+        // Firestore REST API v1
         const firestoreUrl = `https://firestore.googleapis.com/v1/projects/zentask-ai/databases/(default)/documents/tasks/${taskId}`;
         const taskResponse = await fetch(firestoreUrl);
 
         if (!taskResponse.ok) {
+            // Se a tarefa não existir, retorna o site normal (o SharedTaskLanding tratará o erro no client)
             return response;
         }
 
         const taskData = await taskResponse.json();
-        const taskTitle = taskData.fields?.titulo?.stringValue || 'Tarefa ZenTask';
-        const taskDesc = taskData.fields?.descricao?.stringValue || 'Você recebeu uma tarefa no ZenTask Pro. Toque para ver detalhes e concluir.';
+        const fields = taskData.fields || {};
 
-        // Injeta as meta-tags no HTML usando HTMLRewriter
+        const taskTitle = fields.titulo?.stringValue || 'Tarefa sem título';
+        const taskDesc = fields.descricao?.stringValue || 'Toque para ver os detalhes da tarefa atribuída no ZenTask Pro.';
+        const creatorName = fields.criada_por_nome?.stringValue || 'ZenTask AI';
+
+        // Monta o novo título dinâmico
+        const seoTitle = `🚀 Tarefa de ${creatorName}: ${taskTitle}`;
+        const seoDesc = taskDesc.length > 150 ? taskDesc.substring(0, 147) + '...' : taskDesc;
+
+        // Injeta as meta-tags no HTML antes de enviar para o WhatsApp/Usuário
         return new HTMLRewriter()
+            .on('title', {
+                element(element) {
+                    element.setInnerContent(`ZenTask Pro | ${taskTitle}`);
+                }
+            })
             .on('meta[property="og:title"]', {
                 element(element) {
-                    element.setAttribute('content', `🚀 Tarefa: ${taskTitle}`);
+                    element.setAttribute('content', seoTitle);
                 },
             })
             .on('meta[property="og:description"]', {
                 element(element) {
-                    element.setAttribute('content', taskDesc);
+                    element.setAttribute('content', seoDesc);
                 },
             })
             .on('meta[property="og:url"]', {
@@ -42,15 +54,16 @@ export async function onRequest(context) {
                     element.setAttribute('content', request.url);
                 },
             })
-            .on('title', {
+            .on('meta[property="og:image"]', {
                 element(element) {
-                    element.setInnerContent(`ZenTask Pro | ${taskTitle}`);
-                }
+                    // Garante que a imagem seja absoluta para o preview carregar
+                    element.setAttribute('content', `${url.origin}/logo_zt.png`);
+                },
             })
             .transform(response);
 
     } catch (error) {
-        console.error('Error fetching task for OG tags:', error);
+        console.error('Error in Dynamic SEO Function:', error);
         return response;
     }
 }

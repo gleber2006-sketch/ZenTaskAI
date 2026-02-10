@@ -105,6 +105,11 @@ const SharedTaskLanding: React.FC<SharedTaskLandingProps> = ({ taskId }) => {
                                 <h1 className={`text-2xl sm:text-3xl font-black text-slate-800 dark:text-white leading-tight tracking-tight ${isCompleted ? 'line-through opacity-50' : ''}`}>
                                     {task.titulo}
                                 </h1>
+                                {task.criada_por_nome && (
+                                    <p className="mt-2 text-xs font-bold text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg inline-block">
+                                        🚀 Atribuída por {task.criada_por_nome}
+                                    </p>
+                                )}
                             </div>
                         </div>
 

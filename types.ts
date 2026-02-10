@@ -91,6 +91,7 @@ export interface Task {
     external_completer_name?: string;
     [key: string]: any;
   };
+  criada_por_nome?: string; // Nome de quem atribuiu a tarefa
 
   // Optional legacy fields mapping (kept loose for transition safety if needed, but discouraged)
   client?: string;
