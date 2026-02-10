@@ -900,8 +900,6 @@ const App: React.FC = () => {
         onLogout={handleLogout}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        navMode={navMode}
-        setNavMode={setNavMode}
       />
 
       {/* Modal de Filtros Mobile */}

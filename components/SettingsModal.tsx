@@ -13,8 +13,6 @@ interface SettingsModalProps {
     onLogout: () => void;
     darkMode: boolean;
     setDarkMode: (value: boolean) => void;
-    navMode: 'tasks' | 'dashboard';
-    setNavMode: (mode: 'tasks' | 'dashboard') => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -29,8 +27,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     onLogout,
     darkMode,
     setDarkMode,
-    navMode,
-    setNavMode
 }) => {
     console.log("⚙️ SettingsModal v1.3.2 loaded");
     if (!isOpen || !user) return null;
