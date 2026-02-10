@@ -43,6 +43,7 @@ const App: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'Tudo'>('Tudo');
   const [deadlineFilter, setDeadlineFilter] = useState<'Tudo' | 'recentes' | 'antigos' | 'custom'>('Tudo');
   const [customDate, setCustomDate] = useState('');
+  const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState('');
@@ -151,6 +152,12 @@ const App: React.FC = () => {
       setTasks(tasks.filter(t => t.id !== id));
       console.log(`✅ Tarefa ${id} excluída.`);
     } catch (e) { console.error("Erro ao excluir tarefa:", e); }
+  };
+
+  const toggleGroup = (type: string) => {
+    setCollapsedGroups(prev =>
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
   };
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -578,8 +585,11 @@ const App: React.FC = () => {
                   if (!group || group.length === 0) return null;
                   return (
                     <div key={type} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      <div className="flex items-center gap-4 mb-4">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                      <div
+                        className="flex items-center gap-4 mb-4 cursor-pointer select-none group/header"
+                        onClick={() => toggleGroup(type)}
+                      >
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 whitespace-nowrap group-hover/header:text-indigo-500 transition-colors">
                           {type === 'meta' && "🎯 Metas Estratégicas"}
                           {type === 'rotina' && "🔄 Rotinas"}
                           {type === 'evento' && "📅 Compromissos"}
@@ -587,20 +597,34 @@ const App: React.FC = () => {
                           {type === 'finalizada' && "✅ Finalizadas"}
                         </h3>
                         <div className="h-px bg-slate-100 dark:bg-slate-800/60 flex-1"></div>
-                        <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600">{group.length}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded-full border border-slate-200/20 dark:border-slate-700/30">
+                            {group.length}
+                          </span>
+                          <svg
+                            className={`w-3 h-3 text-slate-300 transition-transform duration-300 ${collapsedGroups.includes(type) ? '-rotate-90' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
                       </div>
-                      <div className="space-y-3">
-                        {group.map(task => (
-                          <TaskItem
-                            key={task.id}
-                            task={task}
-                            categories={categories}
-                            onEdit={handleEditTask}
-                            onDelete={handleDeleteTask}
-                            onToggleStatus={handleToggleStatus}
-                          />
-                        ))}
-                      </div>
+                      {!collapsedGroups.includes(type) && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                          {group.map(task => (
+                            <TaskItem
+                              key={task.id}
+                              task={task}
+                              categories={categories}
+                              onEdit={handleEditTask}
+                              onDelete={handleDeleteTask}
+                              onToggleStatus={handleToggleStatus}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
