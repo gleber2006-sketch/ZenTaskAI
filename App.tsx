@@ -331,7 +331,7 @@ const App: React.FC = () => {
 
   // Grouping Logic
   const groupedTasks = filteredTasks.reduce((acc, t) => {
-    const key = t.tipo || 'tarefa';
+    const key = t.status === 'concluida' ? 'finalizada' : (t.tipo || 'tarefa');
     if (!acc[key]) acc[key] = [];
     acc[key].push(t);
     return acc;
@@ -341,7 +341,7 @@ const App: React.FC = () => {
     return <SharedTaskLanding taskId={sharedTaskId} />;
   }
 
-  const groupOrder: (keyof typeof groupedTasks)[] = ['meta', 'rotina', 'evento', 'tarefa'];
+  const groupOrder: string[] = ['meta', 'rotina', 'evento', 'tarefa', 'finalizada'];
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-200 text-[13px]">
@@ -575,6 +575,7 @@ const App: React.FC = () => {
                           {type === 'rotina' && "🔄 Rotinas"}
                           {type === 'evento' && "📅 Compromissos"}
                           {type === 'tarefa' && "⚡ Execução"}
+                          {type === 'finalizada' && "✅ Finalizadas"}
                         </h3>
                         <div className="h-px bg-slate-100 dark:bg-slate-800/60 flex-1"></div>
                         <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600">{group.length}</span>
