@@ -89,6 +89,9 @@ export interface Task {
   metadata?: {
     completed_by_external?: boolean;
     external_completer_name?: string;
+    accepted_by_name?: string;
+    accepted_at?: any;
+    prazo_estendido?: boolean;
     [key: string]: any;
   };
   criada_por_nome?: string; // Nome de quem atribuiu a tarefa

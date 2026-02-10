@@ -189,6 +189,17 @@ export const completeTaskExternally = async (taskId: string, completerName: stri
     });
 };
 
+export const acceptTaskExternally = async (taskId: string, acceptorName: string) => {
+    const docRef = doc(db, COLLECTION_TASKS, taskId);
+    await updateDoc(docRef, {
+        atualizada_em: Timestamp.now(),
+        metadata: {
+            accepted_by_name: acceptorName,
+            accepted_at: Timestamp.now()
+        }
+    });
+};
+
 export const createTasksBulk = async (userId: string, taskDataList: CreatedTaskData[]) => {
     const batch = writeBatch(db);
 

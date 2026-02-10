@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Task, Category } from '../types';
-import { getPublicTask, completeTaskExternally } from '../services/taskService';
+import { getPublicTask, completeTaskExternally, acceptTaskExternally } from '../services/taskService';
 import { fetchCategories } from '../services/categoryService';
 
 interface SharedTaskLandingProps {
@@ -12,10 +12,13 @@ const SharedTaskLanding: React.FC<SharedTaskLandingProps> = ({ taskId }) => {
     const [task, setTask] = useState<Task | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
-    const [completing, setCompleting] = useState(false);
-    const [completerName, setCompleterName] = useState('');
     const [showNameInput, setShowNameInput] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [isAccepted, setIsAccepted] = useState(false);
+    const [acceptorName, setAcceptorName] = useState('');
+    const [accepting, setAccepting] = useState(false);
+    const [completing, setCompleting] = useState(false);
+    const [completerName, setCompleterName] = useState('');
 
     useEffect(() => {
         const loadTask = async () => {
@@ -23,6 +26,10 @@ const SharedTaskLanding: React.FC<SharedTaskLandingProps> = ({ taskId }) => {
             if (data) {
                 setTask(data);
                 if (data.status === 'concluida') setIsCompleted(true);
+                if (data.metadata?.accepted_by_name) {
+                    setIsAccepted(true);
+                    setAcceptorName(data.metadata.accepted_by_name);
+                }
                 // Load categories to show icon/color
                 const cats = await fetchCategories(data.userId);
                 setCategories(cats);
@@ -31,6 +38,25 @@ const SharedTaskLanding: React.FC<SharedTaskLandingProps> = ({ taskId }) => {
         };
         loadTask();
     }, [taskId]);
+
+    const handleAccept = async () => {
+        if (!completerName.trim()) {
+            setShowNameInput(true);
+            return;
+        }
+
+        setAccepting(true);
+        try {
+            await acceptTaskExternally(taskId, completerName);
+            setIsAccepted(true);
+            setAcceptorName(completerName);
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao aceitar tarefa.");
+        } finally {
+            setAccepting(false);
+        }
+    };
 
     const handleComplete = async () => {
         if (!completerName.trim()) {
@@ -145,33 +171,56 @@ const SharedTaskLanding: React.FC<SharedTaskLandingProps> = ({ taskId }) => {
                             <div className="space-y-6">
                                 {showNameInput ? (
                                     <div className="animate-in slide-in-from-bottom-4 duration-500">
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-2">Seu Nome</label>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-2">Qual o seu nome?</label>
                                         <div className="relative">
                                             <input
                                                 type="text"
                                                 className="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-2xl py-4 px-6 text-sm font-bold focus:ring-2 focus:ring-indigo-500 transition-all dark:text-white outline-none"
-                                                placeholder="Digite seu nome para concluir..."
+                                                placeholder="Para registro no sistema..."
                                                 value={completerName}
                                                 onChange={e => setCompleterName(e.target.value)}
                                                 autoFocus
                                             />
-                                            <button
-                                                onClick={handleComplete}
-                                                disabled={completing || !completerName.trim()}
-                                                className="absolute right-2 top-2 bottom-2 px-6 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/20 active:scale-95 disabled:opacity-50 transition-all"
-                                            >
-                                                {completing ? '...' : 'Enviar'}
-                                            </button>
+                                            <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                                                {!isAccepted && (
+                                                    <button
+                                                        onClick={handleAccept}
+                                                        disabled={accepting || !completerName.trim()}
+                                                        className="flex-1 py-4 bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        {accepting ? '...' : <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Aceitar</>}
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={handleComplete}
+                                                    disabled={completing || !completerName.trim()}
+                                                    className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    {completing ? '...' : <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg> Concluir</>}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : (
-                                    <button
-                                        onClick={() => setShowNameInput(true)}
-                                        className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-indigo-600/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
-                                        Concluir Tarefa
-                                    </button>
+                                    <div className="space-y-4">
+                                        {isAccepted && (
+                                            <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-[1.5rem] border border-indigo-100 dark:border-indigo-800 animate-in fade-in duration-500">
+                                                <div className="w-8 h-8 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs shadow-md shrink-0">
+                                                    🤝
+                                                </div>
+                                                <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                                                    Missão aceita por <span className="font-black text-indigo-700 dark:text-indigo-300">{acceptorName}</span>
+                                                </p>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => setShowNameInput(true)}
+                                            className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-indigo-600/30 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                                            {isAccepted ? 'Concluir Agora' : 'Aceitar ou Concluir'}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         ) : (

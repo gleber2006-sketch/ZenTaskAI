@@ -115,10 +115,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
       const { updateTask } = await import('../services/taskService');
       const { Timestamp } = await import('firebase/firestore');
 
-      // Calcula nova data: Soma exatamente 24h (86400 segundos) ao prazo atual
-      const currentSeconds = task.prazo?.seconds || (Math.floor(Date.now() / 1000));
-      const newSeconds = currentSeconds + (24 * 60 * 60);
-      const newTimestamp = new Timestamp(newSeconds, 0);
+      // Calcula nova data: Normaize para o início do dia local + 1 dia
+      const currentMs = task.prazo?.seconds ? task.prazo.seconds * 1000 : Date.now();
+      const d = new Date(currentMs);
+
+      // Adiciona 24h e reseta para 00:00:00 local (como o formulário faz via YYYY-MM-DD)
+      const nextDay = new Date(d.getTime() + 24 * 60 * 60 * 1000);
+      nextDay.setHours(0, 0, 0, 0);
+
+      const newTimestamp = Timestamp.fromDate(nextDay);
 
       const updates = {
         prazo: newTimestamp,
@@ -227,7 +232,12 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
             </span>
             {task.metadata?.completed_by_external && (
               <span className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200 dark:border-emerald-800">
-                ⚡ {task.metadata.external_completer_name}
+                ✅ {task.metadata.external_completer_name}
+              </span>
+            )}
+            {task.metadata?.accepted_by_name && !task.metadata?.completed_by_external && (
+              <span className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 rounded-md border border-indigo-200 dark:border-indigo-800">
+                🤝 {task.metadata.accepted_by_name}
               </span>
             )}
             {task.prioridade === 'critica' && (

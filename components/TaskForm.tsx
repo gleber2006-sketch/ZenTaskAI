@@ -205,7 +205,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                 value: value || null,
                 recorrencia: recorrencia || null,
                 metadata: Object.keys(metadata).length > 0 ? metadata : null,
-                prazo: prazo ? Timestamp.fromDate(new Date(prazo)) : null,
+                prazo: prazo ? (() => {
+                    const [y, m, d] = prazo.split('-').map(Number);
+                    return Timestamp.fromDate(new Date(y, m - 1, d, 0, 0, 0, 0));
+                })() : null,
             };
 
             if (existingTask) {
