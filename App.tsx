@@ -476,6 +476,17 @@ const App: React.FC = () => {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM14 13a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
                 </button>
               </div>
+
+              {/* Dark Mode Toggle (Mobile Only) */}
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="md:hidden flex items-center justify-center w-10 h-6 rounded-full bg-slate-200 dark:bg-slate-700 transition-colors relative"
+                aria-label="Alternar Modo Escuro"
+              >
+                <div className={`absolute left-1 w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform duration-300 ${darkMode ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                <svg className={`w-3 h-3 text-yellow-500 absolute left-1.5 transition-opacity ${darkMode ? 'opacity-0' : 'opacity-100'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <svg className={`w-3 h-3 text-indigo-300 absolute right-1.5 transition-opacity ${!darkMode ? 'opacity-0' : 'opacity-100'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+              </button>
             </div>
           </div>
 
@@ -825,15 +836,11 @@ const App: React.FC = () => {
         </button>
 
         <button
-          onClick={() => {
-            setActiveMobileTab('tasks');
-            setNavMode('dashboard');
-            setFocusMode(false);
-          }}
-          className={`flex flex-col items-center gap-1 transition-all ${activeMobileTab === 'tasks' && navMode === 'dashboard' && !focusMode ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+          onClick={() => setActiveMobileTab('ai')}
+          className={`flex flex-col items-center gap-1 transition-all ${activeMobileTab === 'ai' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-          <span className="text-[10px] font-bold uppercase tracking-tight">Dashboard</span>
+          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black border-2 transition-colors ${activeMobileTab === 'ai' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-transparent border-slate-300 dark:border-slate-700'}`}>ZT</div>
+          <span className="text-[10px] font-bold uppercase tracking-tight">AI Chat</span>
         </button>
 
         <button
@@ -848,11 +855,15 @@ const App: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveMobileTab('ai')}
-          className={`flex flex-col items-center gap-1 transition-all ${activeMobileTab === 'ai' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+          onClick={() => {
+            setActiveMobileTab('tasks');
+            setNavMode('dashboard');
+            setFocusMode(false);
+          }}
+          className={`flex flex-col items-center gap-1 transition-all ${activeMobileTab === 'tasks' && navMode === 'dashboard' && !focusMode ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
         >
-          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black border-2 transition-colors ${activeMobileTab === 'ai' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-transparent border-slate-300 dark:border-slate-700'}`}>ZT</div>
-          <span className="text-[10px] font-bold uppercase tracking-tight">AI Chat</span>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span className="text-[10px] font-bold uppercase tracking-tight">Dashboard</span>
         </button>
 
         <button
