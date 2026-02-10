@@ -161,6 +161,10 @@ const App: React.FC = () => {
     );
   };
 
+  const handleUpdateTask = (id: string, updates: Partial<Task>) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
   const handleQuickAdd = async (title: string) => {
     if (!user) return;
     try {
@@ -572,6 +576,7 @@ const App: React.FC = () => {
                 onEdit={handleEditTask}
                 onDelete={handleDeleteTask}
                 onToggleStatus={handleToggleStatus}
+                onUpdateTask={handleUpdateTask}
               />
             ) : (
               <div className="space-y-8 pb-8">
@@ -616,6 +621,7 @@ const App: React.FC = () => {
                               onEdit={handleEditTask}
                               onDelete={handleDeleteTask}
                               onToggleStatus={handleToggleStatus}
+                              onUpdateTask={handleUpdateTask}
                             />
                           ))}
                         </div>

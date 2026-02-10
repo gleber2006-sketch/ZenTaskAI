@@ -9,10 +9,11 @@ interface TaskItemProps {
   categories: Category[];
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
-  onToggleStatus?: (task: Task) => void;
+  onToggleStatus: (task: Task) => void;
+  onUpdateTask?: (id: string, updates: Partial<Task>) => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete, onToggleStatus }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete, onToggleStatus, onUpdateTask }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [subcategory, setSubcategory] = useState<Subcategory | null>(null);
   const [newItem, setNewItem] = useState('');
@@ -114,12 +115,26 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
       const { updateTask } = await import('../services/taskService');
       const { Timestamp } = await import('firebase/firestore');
 
-      // Calcula nova data: 24h a partir de agora ou do prazo antigo (o que for maior)
-      const currentDeadline = task.prazo.seconds * 1000;
-      const baseDate = Math.max(Date.now(), currentDeadline);
-      const newDeadline = new Date(baseDate + 24 * 60 * 60 * 1000);
+      // Calcula nova data: Soma exatamente 24h (86400 segundos) ao prazo atual
+      const currentSeconds = task.prazo?.seconds || (Math.floor(Date.now() / 1000));
+      const newSeconds = currentSeconds + (24 * 60 * 60);
+      const newTimestamp = new Timestamp(newSeconds, 0);
 
-      await updateTask(task.id, { prazo: Timestamp.fromDate(newDeadline) });
+      const updates = {
+        prazo: newTimestamp,
+        metadata: {
+          ...(task.metadata || {}),
+          prazo_estendido: true
+        }
+      };
+
+      // Atualiza Firestore
+      await updateTask(task.id, updates);
+
+      // Atualiza UI local instantaneamente
+      if (onUpdateTask) {
+        onUpdateTask(task.id, updates);
+      }
     } catch (error) {
       console.error("Error extending deadline", error);
     }
@@ -238,18 +253,25 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
             {task.prazo && (() => {
               const deadlineDate = new Date(task.prazo.seconds * 1000);
               const isOverdue = !isCompleted && deadlineDate < new Date();
+              const isExtended = task.metadata?.prazo_estendido;
+
+              let dateColorClass = 'text-slate-400';
+              if (isOverdue) dateColorClass = 'text-rose-500 font-bold animate-pulse';
+              else if (isExtended) dateColorClass = 'text-amber-500 font-bold';
+
               return (
                 <div className="flex items-center">
-                  <span className={`text-[10px] flex items-center gap-1 ${isOverdue ? 'text-rose-500 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  <span className={`text-[10px] flex items-center gap-1 ${dateColorClass}`}>
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     {deadlineDate.toLocaleDateString()}
                   </span>
-                  {isOverdue && (
+                  {!isCompleted && (
                     <button
                       onClick={handleExtendDeadline}
-                      className="ml-2 px-1.5 py-0.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded text-[8px] font-black uppercase tracking-tighter transition-all border border-rose-500/20 active:scale-90 flex items-center gap-1"
-                      title="Prorrogar por 24h"
+                      className="ml-2 px-2 py-0.5 bg-emerald-500 text-white hover:bg-emerald-600 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all shadow-sm shadow-emerald-500/20 active:scale-95 flex items-center gap-1 border border-emerald-400"
+                      title="Adiar +24h"
                     >
+                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
                       <span>+24h</span>
                     </button>
                   )}

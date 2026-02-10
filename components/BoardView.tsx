@@ -8,6 +8,7 @@ interface BoardViewProps {
     onEdit: (task: Task) => void;
     onDelete: (id: string) => void;
     onToggleStatus: (task: Task) => void;
+    onUpdateTask?: (id: string, updates: Partial<Task>) => void;
 }
 
 const statusConfig: Record<TaskStatus, { label: string; icon: string; color: string }> = {
@@ -18,7 +19,7 @@ const statusConfig: Record<TaskStatus, { label: string; icon: string; color: str
     concluida: { label: 'Concluída', icon: '✅', color: 'bg-emerald-500' }
 };
 
-const BoardView: React.FC<BoardViewProps> = ({ tasks, categories, onEdit, onDelete, onToggleStatus }) => {
+const BoardView: React.FC<BoardViewProps> = ({ tasks, categories, onEdit, onDelete, onToggleStatus, onUpdateTask }) => {
     const statuses: TaskStatus[] = ['pendente', 'em_progresso', 'aguardando', 'bloqueada', 'concluida'];
 
     const getTasksByStatus = (status: TaskStatus) => tasks.filter(t => t.status === status);
@@ -57,6 +58,7 @@ const BoardView: React.FC<BoardViewProps> = ({ tasks, categories, onEdit, onDele
                                             onEdit={onEdit}
                                             onDelete={onDelete}
                                             onToggleStatus={onToggleStatus}
+                                            onUpdateTask={onUpdateTask}
                                         />
                                     </div>
                                 ))
