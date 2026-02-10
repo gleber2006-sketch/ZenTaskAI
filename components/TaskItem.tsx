@@ -204,7 +204,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
   };
 
   return (
-    <div className={`group border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-all duration-500 ${isExpanded ? 'bg-slate-50 dark:bg-slate-800/50 border-b-slate-200 dark:border-b-slate-700' : 'bg-white dark:bg-slate-900'} ${isCompleted ? 'opacity-70 contrast-75' : 'opacity-100'}`}>
+    <div className={`group border-b border-slate-200 dark:border-slate-800 last:border-0 hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-all duration-500 ${isExpanded ? 'bg-slate-50 dark:bg-slate-800/50 border-b-slate-300 dark:border-b-slate-700' : 'bg-white dark:bg-slate-900'} ${isCompleted ? 'opacity-70 contrast-75' : 'opacity-100'}`}>
 
       {/* COMPACT ROW */}
       <div
@@ -336,13 +336,13 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
         <div className="px-12 pb-4 pt-0 cursor-default">
           <div className="flex flex-col gap-3">
             {task.descricao && (
-              <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-md border border-slate-100 dark:border-slate-800/50">
+              <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-md border border-slate-200/80 dark:border-slate-800/50">
                 {subcategory?.nome?.trim().toLowerCase() === 'compras'
                   ? (
                     <>
                       {renderDescriptionWithCheckboxes(task.descricao)}
                       {/* Inline Add Button for Compras */}
-                      <div className="flex items-center gap-2 pt-3 mt-1 border-t border-slate-200 dark:border-slate-800">
+                      <div className="flex items-center gap-2 pt-3 mt-1 border-t border-slate-300 dark:border-slate-800">
                         <input
                           type="text"
                           value={newItem}

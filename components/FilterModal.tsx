@@ -61,8 +61,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
                                     key={s}
                                     onClick={() => setStatusFilter(s)}
                                     className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all ${statusFilter === s
-                                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500'
+                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}
                                 >
                                     {s === 'Tudo' ? 'Todos' : s.replace('_', ' ')}
@@ -80,8 +80,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
                                     key={p}
                                     onClick={() => setPriorityFilter(p)}
                                     className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all ${priorityFilter === p
-                                            ? 'bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/20'
-                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500'
+                                        ? 'bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/20'
+                                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500'
                                         }`}
                                 >
                                     {p}
@@ -100,8 +100,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
                                         key={d}
                                         onClick={() => setDeadlineFilter(d)}
                                         className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all ${deadlineFilter === d
-                                                ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                                                : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500'
+                                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500'
                                             }`}
                                     >
                                         {d === 'Tudo' ? 'Qualquer' : d === 'custom' ? 'Escolher Dia...' : d.replace('recentes', 'Próximos').replace('antigos', 'Distantes')}
@@ -122,7 +122,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </div>
 
                 {/* Footer Actions */}
-                <div className="mt-8 flex gap-3 border-t border-slate-100 dark:border-slate-800 pt-6">
+                <div className="mt-8 flex gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
                     <button
                         onClick={onClear}
                         className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 font-black"

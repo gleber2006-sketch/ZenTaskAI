@@ -451,8 +451,8 @@ const App: React.FC = () => {
       <main className={`flex-1 flex flex-col ${focusMode ? 'lg:flex' : 'lg:grid lg:grid-cols-12'} gap-0 md:gap-6 min-h-0 overflow-hidden pb-16 md:pb-0 transition-all duration-500`}>
 
         {/* Left: Tasks Panel */}
-        <section className={`${focusMode ? 'lg:col-span-12' : 'lg:col-span-7 xl:col-span-8'} flex flex-col min-h-0 bg-white dark:bg-slate-900 md:rounded-3xl shadow-md border-x md:border border-gray-200 dark:border-slate-800 overflow-hidden transition-all duration-500 ${activeMobileTab === 'tasks' ? 'flex' : 'hidden md:flex'} animate-in fade-in slide-in-from-left-4`}>
-          <div className="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 flex items-center justify-between shrink-0">
+        <section className={`${focusMode ? 'lg:col-span-12' : 'lg:col-span-7 xl:col-span-8'} flex flex-col min-h-0 bg-white dark:bg-slate-900 md:rounded-3xl shadow-md border-x md:border border-slate-300 dark:border-slate-800 overflow-hidden transition-all duration-500 ${activeMobileTab === 'tasks' ? 'flex' : 'hidden md:flex'} animate-in fade-in slide-in-from-left-4`}>
+          <div className="p-4 sm:p-5 border-b border-slate-300 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 flex items-center justify-between shrink-0">
             <h2 className="font-bold text-gray-800 dark:text-gray-100 flex items-center text-sm uppercase tracking-wider">
               <svg className="w-5 h-5 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -697,7 +697,7 @@ const App: React.FC = () => {
                                 {type === 'tarefa' && "⚡ Execução"}
                                 {type === 'finalizada' && "✅ Finalizadas"}
                               </h3>
-                              <div className="h-px bg-slate-100 dark:bg-slate-800/60 flex-1"></div>
+                              <div className="h-px bg-slate-200 dark:bg-slate-800/60 flex-1"></div>
                               <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded-full border border-slate-200/20 dark:border-slate-700/30">
                                   {group.length}
@@ -739,8 +739,8 @@ const App: React.FC = () => {
 
         {/* Right: AI Chat Interface */}
         {!focusMode && (
-          <section className={`lg:col-span-5 xl:col-span-4 flex flex-col min-h-0 bg-white dark:bg-slate-900 md:rounded-3xl shadow-md border-x md:border border-gray-200 dark:border-slate-800 overflow-hidden ${activeMobileTab === 'ai' ? 'flex' : 'hidden md:flex'} animate-in fade-in slide-in-from-right-4`}>
-            <div className="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 flex items-center space-x-4 shrink-0">
+          <section className={`lg:col-span-5 xl:col-span-4 flex flex-col min-h-0 bg-white dark:bg-slate-900 md:rounded-3xl shadow-md border-x md:border border-slate-300 dark:border-slate-800 overflow-hidden ${activeMobileTab === 'ai' ? 'flex' : 'hidden md:flex'} animate-in fade-in slide-in-from-right-4`}>
+            <div className="p-4 sm:p-5 border-b border-slate-300 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 flex items-center space-x-4 shrink-0">
               <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0">ZT</div>
               <div>
                 <h2 className="font-bold text-gray-800 dark:text-gray-100 text-sm leading-tight">Zen Assistant</h2>
@@ -774,7 +774,7 @@ const App: React.FC = () => {
               <div ref={historyEndRef} />
             </div>
 
-            <form onSubmit={handleCommand} className="p-4 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 shrink-0">
+            <form onSubmit={handleCommand} className="p-4 bg-white dark:bg-slate-900 border-t border-slate-300 dark:border-slate-800 shrink-0">
               {selectedFile && (
                 <div className="mb-3 flex items-center p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
                   <div className="flex-1 min-w-0">

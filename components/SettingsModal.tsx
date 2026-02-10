@@ -66,7 +66,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Ajustes</h3>
                         <p className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em]">ZenTask Workspace v1.8.0</p>
                     </div>
-                    <button onClick={onClose} className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-2xl transition-all active:scale-95 border border-slate-100 dark:border-slate-700/50">
+                    <button onClick={onClose} className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-2xl transition-all active:scale-95 border border-slate-200 dark:border-slate-700/50">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
@@ -74,7 +74,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="space-y-6 max-h-[70vh] overflow-y-auto no-scrollbar pb-2">
 
                     {/* Seção de Perfil */}
-                    <div className="bg-slate-50/50 dark:bg-slate-800/30 p-5 rounded-3xl border border-slate-100 dark:border-slate-800/50 relative overflow-hidden group">
+                    <div className="bg-slate-50/50 dark:bg-slate-800/30 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/50 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -mr-10 -mt-10" />
                         <div className="flex items-center gap-4 relative">
                             <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-[0_8px_16px_-4px_rgba(79,70,229,0.4)]">
@@ -218,7 +218,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Botão de Sair (Logout) */}
-                <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 shrink-0">
+                <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800/80 shrink-0">
                     <button
                         onClick={() => {
                             if (window.confirm("Deseja realmente sair da sua conta?")) {
