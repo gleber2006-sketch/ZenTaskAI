@@ -108,6 +108,23 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
     }
   };
 
+  const handleExtendDeadline = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const { updateTask } = await import('../services/taskService');
+      const { Timestamp } = await import('firebase/firestore');
+
+      // Calcula nova data: 24h a partir de agora ou do prazo antigo (o que for maior)
+      const currentDeadline = task.prazo.seconds * 1000;
+      const baseDate = Math.max(Date.now(), currentDeadline);
+      const newDeadline = new Date(baseDate + 24 * 60 * 60 * 1000);
+
+      await updateTask(task.id, { prazo: Timestamp.fromDate(newDeadline) });
+    } catch (error) {
+      console.error("Error extending deadline", error);
+    }
+  };
+
   const renderDescriptionWithCheckboxes = (text: string) => {
     const lines = text.split('\n');
     let checkboxIndex = 0;
@@ -218,12 +235,27 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
                 {subcategory.nome}
               </span>
             )}
-            {task.prazo && (
-              <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                {new Date(task.prazo.seconds * 1000).toLocaleDateString()}
-              </span>
-            )}
+            {task.prazo && (() => {
+              const deadlineDate = new Date(task.prazo.seconds * 1000);
+              const isOverdue = !isCompleted && deadlineDate < new Date();
+              return (
+                <div className="flex items-center">
+                  <span className={`text-[10px] flex items-center gap-1 ${isOverdue ? 'text-rose-500 font-bold animate-pulse' : 'text-slate-400'}`}>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    {deadlineDate.toLocaleDateString()}
+                  </span>
+                  {isOverdue && (
+                    <button
+                      onClick={handleExtendDeadline}
+                      className="ml-2 px-1.5 py-0.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded text-[8px] font-black uppercase tracking-tighter transition-all border border-rose-500/20 active:scale-90 flex items-center gap-1"
+                      title="Prorrogar por 24h"
+                    >
+                      <span>+24h</span>
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
 
