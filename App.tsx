@@ -40,6 +40,8 @@ const App: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'Tudo'>('Tudo');
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'Tudo'>('Tudo');
+  const [deadlineFilter, setDeadlineFilter] = useState<'Tudo' | 'recentes' | 'antigos' | 'custom'>('Tudo');
+  const [customDate, setCustomDate] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState('');
@@ -268,13 +270,45 @@ const App: React.FC = () => {
   const filteredTasks = tasks.filter(t => {
     // Search
     if (searchTerm && !t.titulo.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    // Category
-    if (activeCategory !== 'Tudo' && t.categoria_id !== activeCategory) return false;
-    // Status
-    if (statusFilter !== 'Tudo' && t.status !== statusFilter) return false;
     // Priority
-    if (priorityFilter !== 'Tudo' && t.prioridade !== priorityFilter) return false;
+    if (priorityFilter !== 'Tudo' && t.priority !== priorityFilter && t.prioridade !== priorityFilter) return false;
+
+    // Deadline Custom Filter
+    if (deadlineFilter === 'custom' && customDate) {
+      if (!t.prazo) return false;
+      const tDate = t.prazo.toDate ? t.prazo.toDate() : new Date(t.prazo.seconds * 1000);
+      const filterDate = new Date(customDate + 'T00:00:00');
+      if (tDate.toLocaleDateString() !== filterDate.toLocaleDateString()) return false;
+    }
+
     return true;
+  }).sort((a, b) => {
+    // Apply Deadline Sorting if selected
+    if (deadlineFilter === 'recentes') {
+      if (!a.prazo && !b.prazo) return 0;
+      if (!a.prazo) return 1;
+      if (!b.prazo) return -1;
+      const dateA = a.prazo.toDate ? a.prazo.toDate() : new Date(a.prazo.seconds * 1000);
+      const dateB = b.prazo.toDate ? b.prazo.toDate() : new Date(b.prazo.seconds * 1000);
+      return dateA.getTime() - dateB.getTime();
+    }
+    if (deadlineFilter === 'antigos') {
+      if (!a.prazo && !b.prazo) return 0;
+      if (!a.prazo) return 1;
+      if (!b.prazo) return -1;
+      const dateA = a.prazo.toDate ? a.prazo.toDate() : new Date(a.prazo.seconds * 1000);
+      const dateB = b.prazo.toDate ? b.prazo.toDate() : new Date(b.prazo.seconds * 1000);
+      return dateB.getTime() - dateA.getTime();
+    }
+
+    // Default Sorting (Order then Creation)
+    const ordemA = a.ordem || 0;
+    const ordemB = b.ordem || 0;
+    if (ordemA !== ordemB) return ordemA - ordemB;
+
+    const dataA = (a.criada_em as any)?.seconds || 0;
+    const dataB = (b.criada_em as any)?.seconds || 0;
+    return dataB - dataA;
   });
 
   // Dashboard Metrics
@@ -423,6 +457,34 @@ const App: React.FC = () => {
                   </select>
                 </div>
               </div>
+
+              {/* Deadline Filter Select */}
+              <div className="relative flex-1">
+                <div className={`flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/40 p-2.5 rounded-xl border transition-all ${deadlineFilter !== 'Tudo' ? 'border-indigo-500/50' : 'border-slate-200/20 dark:border-slate-700/30'}`}>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <span className="uppercase tracking-widest text-[10px] text-slate-600 dark:text-slate-300 shrink-0">Prazo:</span>
+                  <select
+                    value={deadlineFilter}
+                    onChange={(e) => setDeadlineFilter(e.target.value as typeof deadlineFilter)}
+                    className="flex-1 bg-transparent text-indigo-600 dark:text-indigo-400 uppercase tracking-wider text-[10px] font-bold focus:outline-none cursor-pointer"
+                  >
+                    <option value="Tudo">Qualquer</option>
+                    <option value="recentes">Mais Próximos</option>
+                    <option value="antigos">Mais Distantes</option>
+                    <option value="custom">Escolher Dia...</option>
+                  </select>
+                </div>
+                {deadlineFilter === 'custom' && (
+                  <div className="absolute top-full left-0 right-0 mt-2 z-10 animate-in fade-in slide-in-from-top-1">
+                    <input
+                      type="date"
+                      value={customDate}
+                      onChange={(e) => setCustomDate(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-800 border border-indigo-500/50 rounded-xl p-2 text-xs text-slate-700 dark:text-slate-200 shadow-xl focus:outline-none ring-2 ring-indigo-500/10"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Quick Add Manual Task */}
@@ -490,6 +552,8 @@ const App: React.FC = () => {
                       setActiveCategory('Tudo');
                       setStatusFilter('Tudo');
                       setPriorityFilter('Tudo');
+                      setDeadlineFilter('Tudo');
+                      setCustomDate('');
                       setSearchTerm('');
                     }}
                     className="px-6 py-2.5 bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
