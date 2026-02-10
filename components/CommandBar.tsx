@@ -53,11 +53,11 @@ const CommandBar: React.FC<CommandBarProps> = ({ searchTerm, setSearchTerm, onQu
 
     return (
         <div className="relative mb-8 group">
-            <div className={`relative flex items-center bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl transition-all duration-300 shadow-lg ${mode === 'create' ? 'ring-2 ring-indigo-500/30 border-indigo-500/50 scale-[1.01]' : 'hover:border-slate-600/60'
+            <div className={`relative flex items-center bg-slate-100 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-300 dark:border-slate-700/50 rounded-2xl transition-all duration-300 shadow-lg ${mode === 'create' ? 'ring-2 ring-indigo-500/30 border-indigo-500/50 scale-[1.01]' : 'hover:border-slate-400 dark:hover:border-slate-600/60'
                 }`}>
 
                 {/* Icon/Indicator */}
-                <div className="pl-4 pr-2 text-slate-500">
+                <div className="pl-4 pr-2 text-slate-400 dark:text-slate-500">
                     {mode === 'search' ? (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -75,7 +75,7 @@ const CommandBar: React.FC<CommandBarProps> = ({ searchTerm, setSearchTerm, onQu
                         value={inputValue}
                         onChange={handleInputChange}
                         placeholder={mode === 'search' ? "Buscar tarefas..." : "O que precisa ser feito? (Enter)"}
-                        className="w-full bg-transparent py-3.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none"
+                        className="w-full bg-transparent py-3.5 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none"
                     />
                 </form>
 
@@ -85,7 +85,7 @@ const CommandBar: React.FC<CommandBarProps> = ({ searchTerm, setSearchTerm, onQu
                     {inputValue && (
                         <button
                             onClick={() => { setInputValue(''); setSearchTerm(''); }}
-                            className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors"
+                            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -94,12 +94,12 @@ const CommandBar: React.FC<CommandBarProps> = ({ searchTerm, setSearchTerm, onQu
                     )}
 
                     {/* Vertical Divider */}
-                    <div className="w-px h-6 bg-slate-700/50 mx-1"></div>
+                    <div className="w-px h-6 bg-slate-300 dark:bg-slate-700/50 mx-1"></div>
 
                     {/* Plus Button */}
                     <button
                         onClick={() => setShowMenu(!showMenu)}
-                        className={`p-1.5 rounded-xl transition-all ${showMenu ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                        className={`p-1.5 rounded-xl transition-all ${showMenu ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
                             }`}
                     >
                         <svg className={`w-6 h-6 transform transition-transform duration-300 ${showMenu ? 'rotate-45' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +113,7 @@ const CommandBar: React.FC<CommandBarProps> = ({ searchTerm, setSearchTerm, onQu
             {showMenu && (
                 <div
                     ref={menuRef}
-                    className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                    className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
                 >
                     <div className="p-2 space-y-1">
                         <button

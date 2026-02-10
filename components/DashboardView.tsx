@@ -32,7 +32,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800/60 shadow-sm transition-all hover:shadow-xl hover:scale-[1.02] group">
+                    <div key={i} className="bg-white dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800/60 shadow-sm transition-all hover:shadow-xl hover:scale-[1.02] group">
                         <div className="flex items-center justify-between mb-4">
                             <div className={`p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 group-hover:scale-110 transition-transform ${stat.label === 'Eficiência' ? stat.color : stat.color.split(' ')[0]}`}>
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d={stat.icon} /></svg>
@@ -44,7 +44,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 ))}
             </div>
 
-            <div className="bg-white dark:bg-slate-800/40 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60 shadow-sm">
+            <div className="bg-white dark:bg-slate-800/40 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800/60 shadow-sm">
                 <h3 className="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6 flex items-center gap-3">
                     <span className="w-2 h-8 bg-indigo-600 rounded-full"></span>
                     Relatório de Produtividade
@@ -65,7 +65,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     </div>
                 </div>
 
-                <div className="mt-12 p-6 bg-slate-50 dark:bg-slate-900/40 rounded-3xl border border-slate-100 dark:border-slate-800/50">
+                <div className="mt-12 p-6 bg-slate-50 dark:bg-slate-900/40 rounded-3xl border border-slate-200 dark:border-slate-800/50">
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                         Sua eficiência atual é de <span className="text-emerald-500 font-black">{completionRate}%</span>.
                         Continue mantendo o ritmo para atingir suas metas semanais.

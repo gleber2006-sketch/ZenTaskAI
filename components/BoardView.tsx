@@ -51,7 +51,7 @@ const BoardView: React.FC<BoardViewProps> = ({ tasks, categories, onEdit, onDele
                                 </div>
                             ) : (
                                 columnTasks.map(task => (
-                                    <div key={task.id} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700/50 overflow-hidden transform transition-all hover:shadow-md hover:-translate-y-0.5">
+                                    <div key={task.id} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/50 overflow-hidden transform transition-all hover:shadow-md hover:-translate-y-0.5">
                                         <TaskItem
                                             task={task}
                                             categories={categories}
