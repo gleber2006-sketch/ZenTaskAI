@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Task } from '../types';
 
 interface CurrentFocusProps {
@@ -7,34 +7,102 @@ interface CurrentFocusProps {
     onExitFocus: () => void;
 }
 
+type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
+
 const CurrentFocus: React.FC<CurrentFocusProps> = ({ topTask, onToggleStatus, onExitFocus }) => {
+    const [timeLeft, setTimeLeft] = useState(25 * 60);
+    const [isActive, setIsActive] = useState(false);
+    const [mode, setMode] = useState<PomodoroMode>('work');
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (isActive && timeLeft > 0) {
+            timerRef.current = setInterval(() => {
+                setTimeLeft((prev) => prev - 1);
+            }, 1000);
+        } else if (timeLeft === 0) {
+            setIsActive(false);
+            if (timerRef.current) clearInterval(timerRef.current);
+            // Play notification sound or show alert
+            alert(mode === 'work' ? "🚀 Ciclo de Flow concluído! Hora de uma pausa." : "☕ Pausa finalizada! Pronto para o Flow?");
+        }
+
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [isActive, timeLeft, mode]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const toggleTimer = () => setIsActive(!isActive);
+
+    const resetTimer = (newMode: PomodoroMode) => {
+        setIsActive(false);
+        setMode(newMode);
+        if (newMode === 'work') setTimeLeft(25 * 60);
+        else if (newMode === 'shortBreak') setTimeLeft(5 * 60);
+        else setTimeLeft(15 * 60);
+    };
+
     if (!topTask) return null;
 
     return (
-        <div className="mb-8 p-8 rounded-[2.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-600/20 relative overflow-hidden group border border-white/10 animate-in slide-in-from-top-4 duration-700">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-white/10 transition-all duration-700"></div>
-            <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-4">
-                    <span className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md">Foco Atual</span>
-                    {topTask.prioridade === 'critica' && <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>}
+        <div className="mb-8 p-8 rounded-[3rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-600/30 relative overflow-hidden group border border-white/10 animate-in slide-in-from-top-4 duration-700">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-white/10 transition-all duration-700"></div>
+
+            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start md:items-center">
+                <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-4">
+                        <span className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md">Foco Atual</span>
+                        {topTask.prioridade === 'critica' && <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>}
+                    </div>
+                    <h1 className="text-4xl font-black mb-3 leading-tight tracking-tight drop-shadow-md">{topTask.titulo}</h1>
+                    <p className="text-indigo-100/70 text-sm max-w-xl line-clamp-2 mb-6 font-medium">
+                        {topTask.descricao || "Mantenha o foco absoluto para concluir este objetivo e entrar em estado de flow."}
+                    </p>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => onToggleStatus(topTask)}
+                            className="px-6 py-3 bg-white text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all hover:bg-slate-50 border-b-4 border-indigo-100"
+                        >
+                            Concluir Missão
+                        </button>
+                        <button
+                            onClick={onExitFocus}
+                            className="text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                            Sair do Foco
+                        </button>
+                    </div>
                 </div>
-                <h1 className="text-3xl font-black mb-3 leading-tight tracking-tight drop-shadow-sm">{topTask.titulo}</h1>
-                <p className="text-indigo-100/70 text-sm max-w-2xl line-clamp-2 mb-6 font-medium">
-                    {topTask.descricao || "Sem descrição disponível. Mantenha o foco absoluto para concluir este objetivo."}
-                </p>
-                <div className="flex items-center gap-4">
+
+                <div className="w-full md:w-auto bg-white/10 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 flex flex-col items-center gap-4 shadow-inner">
+                    <div className="flex gap-2">
+                        {(['work', 'shortBreak'] as const).map((m) => (
+                            <button
+                                key={m}
+                                onClick={() => resetTimer(m)}
+                                className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${mode === m ? 'bg-white text-indigo-600' : 'text-white/60 hover:bg-white/5'}`}
+                            >
+                                {m === 'work' ? 'Flow' : 'Pausa'}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="text-6xl font-black tracking-tighter tabular-nums drop-shadow-lg">
+                        {formatTime(timeLeft)}
+                    </div>
+
                     <button
-                        onClick={() => onToggleStatus(topTask)}
-                        className="px-6 py-2.5 bg-white text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-slate-50"
+                        onClick={toggleTimer}
+                        className={`w-full py-4 px-8 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg ${isActive ? 'bg-rose-500 text-white shadow-rose-500/20' : 'bg-emerald-400 text-slate-900 shadow-emerald-500/20'}`}
                     >
-                        Concluir Foco
-                    </button>
-                    <button
-                        onClick={onExitFocus}
-                        className="text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                        Sair do Modo Foco
+                        {isActive ? 'Pausar Cronômetro' : 'Entrar em estado de Flow'}
                     </button>
                 </div>
             </div>

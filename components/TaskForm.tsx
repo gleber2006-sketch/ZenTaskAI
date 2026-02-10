@@ -24,6 +24,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
     const [status, setStatus] = useState<TaskStatus>('pendente');
     const [tipo, setTipo] = useState<TaskType>('tarefa');
     const [prazo, setPrazo] = useState('');
+    const [hora, setHora] = useState('');
     const [recorrencia, setRecorrencia] = useState('');
     const [value, setValue] = useState('');
     const [metadata, setMetadata] = useState<Record<string, any>>({});
@@ -49,6 +50,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
             if (existingTask.prazo) {
                 const date = existingTask.prazo.toDate ? existingTask.prazo.toDate() : new Date(existingTask.prazo.seconds * 1000);
                 setPrazo(date.toISOString().split('T')[0]);
+                const h = date.getHours().toString().padStart(2, '0');
+                const m = date.getMinutes().toString().padStart(2, '0');
+                if (h !== '00' || m !== '00') {
+                    setHora(`${h}:${m}`);
+                }
             }
         }
     }, [existingTask, userId]); // Added userId
@@ -207,7 +213,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                 metadata: Object.keys(metadata).length > 0 ? metadata : null,
                 prazo: prazo ? (() => {
                     const [y, m, d] = prazo.split('-').map(Number);
-                    return Timestamp.fromDate(new Date(y, m - 1, d, 0, 0, 0, 0));
+                    const [h, min] = hora ? hora.split(':').map(Number) : [0, 0];
+                    return Timestamp.fromDate(new Date(y, m - 1, d, h, min, 0, 0));
                 })() : null,
             };
 
@@ -357,12 +364,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                             </div>
                             <div className="space-y-1.5">
                                 <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Prazo / Agendamento</label>
-                                <input
-                                    type="date"
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-black outline-none dark:text-white cursor-pointer transition-all"
-                                    value={prazo}
-                                    onChange={e => setPrazo(e.target.value)}
-                                />
+                                <div className="flex gap-2">
+                                    <input
+                                        type="date"
+                                        className="flex-1 bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-black outline-none dark:text-white cursor-pointer transition-all"
+                                        value={prazo}
+                                        onChange={e => setPrazo(e.target.value)}
+                                    />
+                                    <input
+                                        type="time"
+                                        className="w-32 bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-4 text-sm font-black outline-none dark:text-white cursor-pointer transition-all"
+                                        value={hora}
+                                        onChange={e => setHora(e.target.value)}
+                                    />
+                                </div>
                             </div>
                         </div>
 
