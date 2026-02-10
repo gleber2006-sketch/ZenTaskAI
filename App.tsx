@@ -8,7 +8,7 @@ import TaskItem from './components/TaskItem';
 import CategoryManager from './components/CategoryManager';
 import TaskForm from './components/TaskForm';
 import { fetchCategories, forceResetCategories } from './services/categoryService';
-import { fetchTasks, deleteTask, deleteAllTasks, createTasksBulk, toggleTaskStatus } from './services/taskService';
+import { fetchTasks, deleteTask, deleteAllTasks, createTasksBulk, toggleTaskStatus, subscribeToTasks } from './services/taskService';
 import { processTaskCommand, FilePart } from './services/geminiService';
 import { ActionType, AIResponse } from './types';
 import StatsHero from './components/StatsHero';
@@ -95,21 +95,32 @@ const App: React.FC = () => {
   const loadData = async (uid: string) => {
     try {
       setIsLoading(true);
-      const [cats, userTasks] = await Promise.all([
-        fetchCategories(uid),
-        fetchTasks(uid)
-      ]);
+      const cats = await fetchCategories(uid);
       setCategories(cats);
-      setTasks(userTasks);
-
-      console.log('✅ Dados carregados com sucesso.');
+      console.log('✅ Categorias carregadas com sucesso.');
     } catch (error) {
-      console.error("Erro ao carregar dados:", error);
+      console.error("Erro ao carregar categorias:", error);
     } finally {
       setIsLoading(false);
       setLoading(false);
     }
   };
+
+  // Sincronização em tempo real das Tarefas (v1.8.1)
+  useEffect(() => {
+    if (!user) return;
+
+    console.log("🔄 Iniciando sincronização em tempo real das tarefas...");
+    const unsubscribe = subscribeToTasks(user.uid, (updatedTasks) => {
+      setTasks(updatedTasks);
+      setLoading(false);
+    });
+
+    return () => {
+      console.log("🛑 Finalizando sincronização das tarefas.");
+      unsubscribe();
+    };
+  }, [user]);
 
   const forceReloadCategories = async () => {
     if (!user) return;
@@ -434,7 +445,16 @@ const App: React.FC = () => {
               />
             )}
 
-            <div className="mb-6 flex space-x-2 overflow-x-auto pb-2 no-scrollbar">
+            <div className="mb-6 flex space-x-2 overflow-x-auto pb-2 no-scrollbar items-center">
+              {/* Botão de Filtro Mobile (Unificado) - Agora no início para visibilidade imediata */}
+              <button
+                onClick={() => setShowFilterModal(true)}
+                className="flex sm:hidden items-center gap-2 px-5 py-2 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest transition-all shrink-0 active:scale-95 shadow-lg shadow-indigo-600/20 mr-1"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
+                Filtros
+              </button>
+
               {['Tudo', ...categories.map(c => c.id)].map(catId => {
                 const cat = categories.find(c => c.id === catId);
                 const isSelected = activeCategory === catId;
@@ -451,14 +471,6 @@ const App: React.FC = () => {
                   </button>
                 );
               })}
-              {/* Botão de Filtro Mobile (Unificado) */}
-              <button
-                onClick={() => setShowFilterModal(true)}
-                className="flex sm:hidden items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest transition-all shrink-0 active:scale-95"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
-                Filtros
-              </button>
             </div>
 
             {/* Sub-Filters: Status & Priority - Native Select - Visible only on Desktop (sm+) */}
@@ -539,108 +551,110 @@ const App: React.FC = () => {
               onManualAdd={handleCreateTask}
             />
 
-            {isLoading && filteredTasks.length === 0 ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-[60px] bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse border border-slate-200/50 dark:border-slate-700/30"></div>
-                ))}
-              </div>
-            ) : filteredTasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full"></div>
-                  <div className="relative w-28 h-28 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-xl border border-slate-100 dark:border-slate-800 ring-1 ring-slate-200/50 dark:ring-slate-700/50">
-                    <svg className="w-14 h-14 text-indigo-500/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+            {
+              isLoading && filteredTasks.length === 0 ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="h-[60px] bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse border border-slate-200/50 dark:border-slate-700/30"></div>
+                  ))}
+                </div>
+              ) : filteredTasks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full"></div>
+                    <div className="relative w-28 h-28 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-xl border border-slate-100 dark:border-slate-800 ring-1 ring-slate-200/50 dark:ring-slate-700/50">
+                      <svg className="w-14 h-14 text-indigo-500/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="font-black text-xl text-slate-800 dark:text-white mb-2 tracking-tight">Produtividade Máxima</h3>
+                  <p className="text-sm text-slate-400 max-w-[200px] leading-relaxed mx-auto">Você completou todos os objetivos desta visão. Hora de planejar o próximo passo.</p>
+                  <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={handleCreateTask}
+                      className="px-6 py-2.5 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                    >
+                      Nova Tarefa
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveCategory('Tudo');
+                        setStatusFilter('Tudo');
+                        setPriorityFilter('Tudo');
+                        setDeadlineFilter('Tudo');
+                        setCustomDate('');
+                        setSearchTerm('');
+                      }}
+                      className="px-6 py-2.5 bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
+                    >
+                      Limpar Filtros
+                    </button>
                   </div>
                 </div>
-                <h3 className="font-black text-xl text-slate-800 dark:text-white mb-2 tracking-tight">Produtividade Máxima</h3>
-                <p className="text-sm text-slate-400 max-w-[200px] leading-relaxed mx-auto">Você completou todos os objetivos desta visão. Hora de planejar o próximo passo.</p>
-                <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={handleCreateTask}
-                    className="px-6 py-2.5 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
-                  >
-                    Nova Tarefa
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveCategory('Tudo');
-                      setStatusFilter('Tudo');
-                      setPriorityFilter('Tudo');
-                      setDeadlineFilter('Tudo');
-                      setCustomDate('');
-                      setSearchTerm('');
-                    }}
-                    className="px-6 py-2.5 bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
-                  >
-                    Limpar Filtros
-                  </button>
-                </div>
-              </div>
-            ) : viewMode === 'board' ? (
-              <BoardView
-                tasks={filteredTasks}
-                categories={categories}
-                onEdit={handleEditTask}
-                onDelete={handleDeleteTask}
-                onToggleStatus={handleToggleStatus}
-                onUpdateTask={handleUpdateTask}
-              />
-            ) : (
-              <div className="space-y-8 pb-8">
-                {groupOrder.map(type => {
-                  const group = groupedTasks[type];
-                  if (!group || group.length === 0) return null;
-                  return (
-                    <div key={type} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      <div
-                        className="flex items-center gap-4 mb-4 cursor-pointer select-none group/header"
-                        onClick={() => toggleGroup(type)}
-                      >
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 whitespace-nowrap group-hover/header:text-indigo-500 transition-colors">
-                          {type === 'meta' && "🎯 Metas Estratégicas"}
-                          {type === 'rotina' && "🔄 Rotinas"}
-                          {type === 'evento' && "📅 Compromissos"}
-                          {type === 'tarefa' && "⚡ Execução"}
-                          {type === 'finalizada' && "✅ Finalizadas"}
-                        </h3>
-                        <div className="h-px bg-slate-100 dark:bg-slate-800/60 flex-1"></div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded-full border border-slate-200/20 dark:border-slate-700/30">
-                            {group.length}
-                          </span>
-                          <svg
-                            className={`w-3 h-3 text-slate-300 transition-transform duration-300 ${collapsedGroups.includes(type) ? '-rotate-90' : ''}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
-                          </svg>
+              ) : viewMode === 'board' ? (
+                <BoardView
+                  tasks={filteredTasks}
+                  categories={categories}
+                  onEdit={handleEditTask}
+                  onDelete={handleDeleteTask}
+                  onToggleStatus={handleToggleStatus}
+                  onUpdateTask={handleUpdateTask}
+                />
+              ) : (
+                <div className="space-y-8 pb-8">
+                  {groupOrder.map(type => {
+                    const group = groupedTasks[type];
+                    if (!group || group.length === 0) return null;
+                    return (
+                      <div key={type} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div
+                          className="flex items-center gap-4 mb-4 cursor-pointer select-none group/header"
+                          onClick={() => toggleGroup(type)}
+                        >
+                          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 whitespace-nowrap group-hover/header:text-indigo-500 transition-colors">
+                            {type === 'meta' && "🎯 Metas Estratégicas"}
+                            {type === 'rotina' && "🔄 Rotinas"}
+                            {type === 'evento' && "📅 Compromissos"}
+                            {type === 'tarefa' && "⚡ Execução"}
+                            {type === 'finalizada' && "✅ Finalizadas"}
+                          </h3>
+                          <div className="h-px bg-slate-100 dark:bg-slate-800/60 flex-1"></div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded-full border border-slate-200/20 dark:border-slate-700/30">
+                              {group.length}
+                            </span>
+                            <svg
+                              className={`w-3 h-3 text-slate-300 transition-transform duration-300 ${collapsedGroups.includes(type) ? '-rotate-90' : ''}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
                         </div>
+                        {!collapsedGroups.includes(type) && (
+                          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                            {group.map(task => (
+                              <TaskItem
+                                key={task.id}
+                                task={task}
+                                categories={categories}
+                                onEdit={handleEditTask}
+                                onDelete={handleDeleteTask}
+                                onToggleStatus={handleToggleStatus}
+                                onUpdateTask={handleUpdateTask}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      {!collapsedGroups.includes(type) && (
-                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                          {group.map(task => (
-                            <TaskItem
-                              key={task.id}
-                              task={task}
-                              categories={categories}
-                              onEdit={handleEditTask}
-                              onDelete={handleDeleteTask}
-                              onToggleStatus={handleToggleStatus}
-                              onUpdateTask={handleUpdateTask}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )
+            }
           </div>
         </section>
 

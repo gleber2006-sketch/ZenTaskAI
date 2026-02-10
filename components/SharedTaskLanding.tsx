@@ -224,14 +224,20 @@ const SharedTaskLanding: React.FC<SharedTaskLandingProps> = ({ taskId }) => {
                                 )}
                             </div>
                         ) : (
-                            <div className="text-center p-8 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-800/50 animate-in fade-in zoom-in duration-500">
+                            <div className="text-center p-8 bg-emerald-50 dark:bg-emerald-900/10 rounded-[2rem] border border-emerald-100 dark:border-emerald-800/50 animate-in fade-in zoom-in duration-500">
                                 <div className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
                                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                                 </div>
                                 <h3 className="text-lg font-black text-emerald-600 dark:text-emerald-400 mb-1">Missão Cumprida!</h3>
-                                <p className="text-sm text-emerald-600/60 dark:text-emerald-400/60 font-medium">
+                                <p className="text-sm text-emerald-600/60 dark:text-emerald-400/60 font-medium mb-6">
                                     {task.metadata?.external_completer_name || completerName} concluiu esta tarefa.
                                 </p>
+                                <div className="flex flex-col gap-3">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Deseja gerenciar suas próprias tarefas?</p>
+                                    <a href="/" className="w-full py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all active:scale-95">
+                                        Criar minha Conta Grátis
+                                    </a>
+                                </div>
                             </div>
                         )}
                     </div>

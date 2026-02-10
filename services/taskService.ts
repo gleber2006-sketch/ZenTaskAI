@@ -12,7 +12,8 @@ import {
     orderBy,
     limit,
     writeBatch,
-    getDoc
+    getDoc,
+    onSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Task, TaskStatus, TaskPriority, CreatedTaskData } from '../types';
@@ -84,6 +85,32 @@ export const fetchTasks = async (userId: string, filters: TaskFilters = {}): Pro
         // Fallback? Return empty
         return [];
     }
+};
+
+export const subscribeToTasks = (userId: string, onUpdate: (tasks: Task[]) => void) => {
+    const q = query(
+        collection(db, COLLECTION_TASKS),
+        where('userId', '==', userId)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        let tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+
+        // Same sorting logic as fetchTasks
+        tasks.sort((a, b) => {
+            const ordemA = a.ordem || 0;
+            const ordemB = b.ordem || 0;
+            if (ordemA !== ordemB) return ordemA - ordemB;
+
+            const dataA = (a.criada_em as any)?.seconds || 0;
+            const dataB = (b.criada_em as any)?.seconds || 0;
+            return dataB - dataA;
+        });
+
+        onUpdate(tasks);
+    }, (error) => {
+        console.error("Error subscribing to tasks:", error);
+    });
 };
 
 export const createTask = async (userId: string, data: Partial<Task>) => {
