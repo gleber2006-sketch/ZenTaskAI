@@ -16,6 +16,7 @@ import CurrentFocus from './components/CurrentFocus';
 import SettingsModal from './components/SettingsModal';
 import Sidebar from './components/Layout/Sidebar';
 import SharedTaskLanding from './components/SharedTaskLanding';
+import BoardView from './components/BoardView';
 
 const App: React.FC = () => {
   console.log("🚀 ZenTaskAI v1.3.9 - Premium UI Definition");
@@ -562,6 +563,14 @@ const App: React.FC = () => {
                   </button>
                 </div>
               </div>
+            ) : viewMode === 'board' ? (
+              <BoardView
+                tasks={filteredTasks}
+                categories={categories}
+                onEdit={handleEditTask}
+                onDelete={handleDeleteTask}
+                onToggleStatus={handleToggleStatus}
+              />
             ) : (
               <div className="space-y-8 pb-8">
                 {groupOrder.map(type => {
