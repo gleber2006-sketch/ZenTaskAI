@@ -208,7 +208,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
 
       {/* COMPACT ROW */}
       <div
-        className="flex items-center gap-4 py-3 pl-4 pr-12 cursor-pointer relative"
+        className="flex items-center gap-3 py-3 px-4 cursor-pointer relative"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         {/* Checkbox / Status Indicator */}
@@ -331,8 +331,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
         </div>
 
         {/* Expand Indicator (The "Button" Cue) */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 border ${isExpanded ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg rotate-180' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 group-hover:text-indigo-500 group-hover:border-indigo-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 shadow-inner'}`}>
+        <div className="flex items-center justify-center shrink-0 ml-1">
+          <div className={`w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 border ${isExpanded ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg rotate-180' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 group-hover:text-indigo-500 group-hover:border-indigo-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 shadow-inner'}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
             </svg>
