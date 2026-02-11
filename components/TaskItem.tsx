@@ -208,7 +208,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
 
       {/* COMPACT ROW */}
       <div
-        className="flex items-center gap-4 py-3 px-4 cursor-pointer relative"
+        className="flex items-center gap-4 py-3 pl-4 pr-12 cursor-pointer relative"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         {/* Checkbox / Status Indicator */}
@@ -331,7 +331,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
         </div>
 
         {/* Expand Indicator */}
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 transition-transform duration-300 pointer-events-none">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 transition-transform duration-300 pointer-events-none md:hidden">
           <svg className={`w-5 h-5 transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
           </svg>
