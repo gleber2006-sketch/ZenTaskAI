@@ -204,11 +204,11 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
   };
 
   return (
-    <div className={`group border-b border-slate-300 dark:border-slate-800 last:border-0 hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-all duration-500 ${isExpanded ? 'bg-slate-50 dark:bg-slate-800/50 border-b-slate-400 dark:border-b-slate-700' : 'bg-white dark:bg-slate-900'} ${isCompleted ? 'opacity-70 contrast-75' : 'opacity-100'}`}>
+    <div className={`group border border-slate-200/60 dark:border-slate-800 rounded-xl mb-2 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 ${isExpanded ? 'bg-slate-50 dark:bg-slate-800/50 shadow-sm border-slate-300 dark:border-slate-700' : 'bg-white dark:bg-slate-900'} ${isCompleted ? 'opacity-70 contrast-75' : 'opacity-100'}`}>
 
       {/* COMPACT ROW */}
       <div
-        className="flex items-center gap-4 py-3 px-4 cursor-pointer"
+        className="flex items-center gap-4 py-3 px-4 cursor-pointer relative"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         {/* Checkbox / Status Indicator */}
@@ -328,6 +328,13 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
           {task.value && (
             <span className="text-xs font-mono text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 rounded">{task.value}</span>
           )}
+        </div>
+
+        {/* Expand Indicator */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 transition-transform duration-300 pointer-events-none">
+          <svg className={`w-5 h-5 transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
       </div>
 
