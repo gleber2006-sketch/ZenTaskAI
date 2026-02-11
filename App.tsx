@@ -118,36 +118,45 @@ const App: React.FC = () => {
 
     console.log("🔄 Iniciando sincronização em tempo real das tarefas...");
     const unsubscribe = subscribeToTasks(user.uid, (updatedTasks) => {
-      // Create a Map for O(1) lookup of previous tasks (Performance Optimization)
-      const prevTasksMap = new Map<string, Task>(prevTasksRef.current.map((t: Task) => [t.id, t]));
+      try {
+        console.log(`📥 Recebidas ${updatedTasks.length} tarefas do Firestore`);
 
-      // Check for Notifications (v1.9.0)
-      updatedTasks.forEach(task => {
-        const prevTask = prevTasksMap.get(task.id);
-
-        // 1. External Completion Alert
-        if (task.status === 'concluida' && prevTask && prevTask.status !== 'concluida' && task.metadata?.completed_by_external) {
-          toast.success(`✓ ${task.metadata.external_completer_name || 'Alguém'} concluiu: ${task.titulo}`, {
-            description: 'Tarefa atribuída foi finalizada.',
-            duration: 8000,
-          });
+        // Create a Map for O(1) lookup (Safety first)
+        const prevTasksMap = new Map<string, Task>();
+        if (Array.isArray(prevTasksRef.current)) {
+          prevTasksRef.current.forEach(t => { if (t && t.id) prevTasksMap.set(t.id, t); });
         }
 
-        // 2. Deadline approaching alert (Within 24h)
-        if (task.prazo && task.status !== 'concluida' && !notifiedDeadlinesRef.current.has(task.id)) {
-          const deadlineDate = task.prazo.toDate ? task.prazo.toDate() : new Date((task.prazo.seconds || 0) * 1000);
-          const now = new Date();
-          const diffHours = (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+        // Check for Notifications (v1.9.0)
+        updatedTasks.forEach(task => {
+          const prevTask = prevTasksMap.get(task.id);
 
-          if (diffHours > 0 && diffHours <= 24) {
-            toast.warning(`⚡ Prazo Próximo: ${task.titulo}`, {
-              description: `Vence em aproximadamente ${Math.round(diffHours)} horas.`,
-              duration: 10000,
+          // 1. External Completion Alert
+          if (task.status === 'concluida' && prevTask && prevTask.status !== 'concluida' && task.metadata?.completed_by_external) {
+            toast.success(`✓ ${task.metadata.external_completer_name || 'Alguém'} concluiu: ${task.titulo}`, {
+              description: 'Tarefa atribuída foi finalizada.',
+              duration: 8000,
             });
-            notifiedDeadlinesRef.current.add(task.id);
           }
-        }
-      });
+
+          // 2. Deadline approaching alert (Within 24h)
+          if (task.prazo && task.status !== 'concluida' && !notifiedDeadlinesRef.current.has(task.id)) {
+            const deadlineDate = task.prazo.toDate ? task.prazo.toDate() : new Date((task.prazo.seconds || 0) * 1000);
+            const now = new Date();
+            const diffHours = (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+            if (diffHours > 0 && diffHours <= 24) {
+              toast.warning(`⚡ Prazo Próximo: ${task.titulo}`, {
+                description: `Vence em aproximadamente ${Math.round(diffHours)} horas.`,
+                duration: 10000,
+              });
+              notifiedDeadlinesRef.current.add(task.id);
+            }
+          }
+        });
+      } catch (err) {
+        console.error("❌ Erro no processamento de notificações:", err);
+      }
 
       prevTasksRef.current = updatedTasks;
       setTasks(updatedTasks);
