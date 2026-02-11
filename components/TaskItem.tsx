@@ -204,7 +204,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
   };
 
   return (
-    <div className={`group border border-slate-200/60 dark:border-slate-800 rounded-xl mb-2 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 ${isExpanded ? 'bg-slate-100 dark:bg-slate-800/50 shadow-sm border-slate-300 dark:border-slate-700' : 'bg-slate-50/50 dark:bg-slate-900/50'} ${isCompleted ? 'opacity-70 contrast-75' : 'opacity-100'}`}>
+    <div className={`group border-2 rounded-[1.25rem] mb-3 transition-all duration-300 origin-center active:scale-[0.98] hover:-translate-y-0.5 hover:shadow-xl ${isExpanded ? 'bg-white dark:bg-slate-800 shadow-lg border-indigo-500/50 dark:border-indigo-500/50 ring-4 ring-indigo-500/5' : 'bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-900/40 shadow-sm'} ${isCompleted ? 'opacity-80' : 'opacity-100'}`}>
 
       {/* COMPACT ROW */}
       <div
@@ -330,11 +330,13 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
           )}
         </div>
 
-        {/* Expand Indicator */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 transition-transform duration-300 pointer-events-none md:hidden">
-          <svg className={`w-5 h-5 transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
+        {/* Expand Indicator (The "Button" Cue) */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 border ${isExpanded ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg rotate-180' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 group-hover:text-indigo-500 group-hover:border-indigo-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 shadow-inner'}`}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
       </div>
 
