@@ -350,6 +350,9 @@ const App: React.FC = () => {
 
   // Filter Logic
   const filteredTasks = tasks.filter(t => {
+    // Category Filter
+    if (activeCategory !== 'Tudo' && t.categoria_id !== activeCategory) return false;
+
     // Search
     if (searchTerm && !t.titulo.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     // Priority
