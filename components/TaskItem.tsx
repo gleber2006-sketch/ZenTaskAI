@@ -204,7 +204,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
   };
 
   return (
-    <div className={`group border border-slate-200/60 dark:border-slate-800 rounded-xl mb-2 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 ${isExpanded ? 'bg-slate-50 dark:bg-slate-800/50 shadow-sm border-slate-300 dark:border-slate-700' : 'bg-white dark:bg-slate-900'} ${isCompleted ? 'opacity-70 contrast-75' : 'opacity-100'}`}>
+    <div className={`group border border-slate-200/60 dark:border-slate-800 rounded-xl mb-2 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 ${isExpanded ? 'bg-slate-100 dark:bg-slate-800/50 shadow-sm border-slate-300 dark:border-slate-700' : 'bg-slate-50/50 dark:bg-slate-900/50'} ${isCompleted ? 'opacity-70 contrast-75' : 'opacity-100'}`}>
 
       {/* COMPACT ROW */}
       <div
