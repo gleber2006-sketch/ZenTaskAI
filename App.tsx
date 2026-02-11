@@ -434,9 +434,6 @@ const App: React.FC = () => {
     };
   }, [tasks]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400 text-sm font-medium">Carregando ZenTask...</div>;
-  if (!user) return <Login />;
-
   // Grouping Logic - useMemo for Performance
   const groupedTasks = useMemo(() => {
     return filteredTasks.reduce((acc, t) => {
@@ -446,6 +443,9 @@ const App: React.FC = () => {
       return acc;
     }, {} as Record<string, Task[]>);
   }, [filteredTasks]);
+
+  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400 text-sm font-medium">Carregando ZenTask...</div>;
+  if (!user) return <Login />;
 
   if (sharedTaskId) {
     return <SharedTaskLanding taskId={sharedTaskId} />;
