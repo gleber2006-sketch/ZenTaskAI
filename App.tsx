@@ -821,7 +821,7 @@ const App: React.FC = () => {
                     rows={1}
                     disabled={isLoading}
                   />
-                  <button type="submit" disabled={isLoading} className="absolute right-2 bottom-1.5 p-1.5 bg-indigo-600 text-white rounded-lg">
+                  <button type="submit" disabled={isLoading} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-lg">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 12h14M12 5l7 7-7 7" /></svg>
                   </button>
                 </div>
