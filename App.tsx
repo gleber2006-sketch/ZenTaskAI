@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { auth } from './services/firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { Task, Category, TaskStatus, TaskPriority } from './types';
@@ -118,9 +118,12 @@ const App: React.FC = () => {
 
     console.log("🔄 Iniciando sincronização em tempo real das tarefas...");
     const unsubscribe = subscribeToTasks(user.uid, (updatedTasks) => {
+      // Create a Map for O(1) lookup of previous tasks (Performance Optimization)
+      const prevTasksMap = new Map<string, Task>(prevTasksRef.current.map((t: Task) => [t.id, t]));
+
       // Check for Notifications (v1.9.0)
       updatedTasks.forEach(task => {
-        const prevTask = prevTasksRef.current.find(t => t.id === task.id);
+        const prevTask = prevTasksMap.get(task.id);
 
         // 1. External Completion Alert
         if (task.status === 'concluida' && prevTask && prevTask.status !== 'concluida' && task.metadata?.completed_by_external) {
@@ -347,80 +350,93 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     await signOut(auth);
   };
+  // Filter Logic - useMemo for Performance
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(t => {
+      // Category Filter
+      if (activeCategory !== 'Tudo' && t.categoria_id !== activeCategory) return false;
 
-  // Filter Logic
-  const filteredTasks = tasks.filter(t => {
-    // Category Filter
-    if (activeCategory !== 'Tudo' && t.categoria_id !== activeCategory) return false;
+      // Search
+      if (searchTerm && !t.titulo.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      // Priority
+      if (priorityFilter !== 'Tudo' && t.priority !== priorityFilter && t.prioridade !== priorityFilter) return false;
 
-    // Search
-    if (searchTerm && !t.titulo.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    // Priority
-    if (priorityFilter !== 'Tudo' && t.priority !== priorityFilter && t.prioridade !== priorityFilter) return false;
+      // Deadline Custom Filter
+      if (deadlineFilter === 'custom' && customDate) {
+        if (!t.prazo) return false;
+        const tDate = t.prazo.toDate ? t.prazo.toDate() : new Date(t.prazo.seconds * 1000);
+        const filterDate = new Date(customDate + 'T00:00:00');
+        if (tDate.toLocaleDateString() !== filterDate.toLocaleDateString()) return false;
+      }
 
-    // Deadline Custom Filter
-    if (deadlineFilter === 'custom' && customDate) {
-      if (!t.prazo) return false;
-      const tDate = t.prazo.toDate ? t.prazo.toDate() : new Date(t.prazo.seconds * 1000);
-      const filterDate = new Date(customDate + 'T00:00:00');
-      if (tDate.toLocaleDateString() !== filterDate.toLocaleDateString()) return false;
-    }
+      return true;
+    }).sort((a, b) => {
+      // Apply Deadline Sorting if selected
+      if (deadlineFilter === 'recentes') {
+        if (!a.prazo && !b.prazo) return 0;
+        if (!a.prazo) return 1;
+        if (!b.prazo) return -1;
+        const dateA = a.prazo.toDate ? a.prazo.toDate() : new Date(a.prazo.seconds * 1000);
+        const dateB = b.prazo.toDate ? b.prazo.toDate() : new Date(b.prazo.seconds * 1000);
+        return dateA.getTime() - dateB.getTime();
+      }
+      if (deadlineFilter === 'antigos') {
+        if (!a.prazo && !b.prazo) return 0;
+        if (!a.prazo) return 1;
+        if (!b.prazo) return -1;
+        const dateA = a.prazo.toDate ? a.prazo.toDate() : new Date(a.prazo.seconds * 1000);
+        const dateB = b.prazo.toDate ? b.prazo.toDate() : new Date(b.prazo.seconds * 1000);
+        return dateB.getTime() - dateA.getTime();
+      }
 
-    return true;
-  }).sort((a, b) => {
-    // Apply Deadline Sorting if selected
-    if (deadlineFilter === 'recentes') {
-      if (!a.prazo && !b.prazo) return 0;
-      if (!a.prazo) return 1;
-      if (!b.prazo) return -1;
-      const dateA = a.prazo.toDate ? a.prazo.toDate() : new Date(a.prazo.seconds * 1000);
-      const dateB = b.prazo.toDate ? b.prazo.toDate() : new Date(b.prazo.seconds * 1000);
-      return dateA.getTime() - dateB.getTime();
-    }
-    if (deadlineFilter === 'antigos') {
-      if (!a.prazo && !b.prazo) return 0;
-      if (!a.prazo) return 1;
-      if (!b.prazo) return -1;
-      const dateA = a.prazo.toDate ? a.prazo.toDate() : new Date(a.prazo.seconds * 1000);
-      const dateB = b.prazo.toDate ? b.prazo.toDate() : new Date(b.prazo.seconds * 1000);
-      return dateB.getTime() - dateA.getTime();
-    }
+      // Default Sorting (Order then Creation)
+      const ordemA = a.ordem || 0;
+      const ordemB = b.ordem || 0;
+      if (ordemA !== ordemB) return ordemA - ordemB;
 
-    // Default Sorting (Order then Creation)
-    const ordemA = a.ordem || 0;
-    const ordemB = b.ordem || 0;
-    if (ordemA !== ordemB) return ordemA - ordemB;
+      const dataA = (a.criada_em as any)?.seconds || 0;
+      const dataB = (b.criada_em as any)?.seconds || 0;
+      return dataB - dataA;
+    });
+  }, [tasks, activeCategory, searchTerm, priorityFilter, deadlineFilter, customDate]);
 
-    const dataA = (a.criada_em as any)?.seconds || 0;
-    const dataB = (b.criada_em as any)?.seconds || 0;
-    return dataB - dataA;
-  });
+  // Dashboard Metrics - useMemo for Performance
+  const { activeTasks, finishedTasks, highPriorityTasks, upcomingTasks, completionRate } = useMemo(() => {
+    const active = tasks.filter(t => t.status !== 'concluida');
+    const finished = tasks.filter(t => t.status === 'concluida');
+    const high = tasks.filter(t => t.status !== 'concluida' && (t.prioridade === 'alta' || t.prioridade === 'critica'));
 
-  // Dashboard Metrics
-  const activeTasks = tasks.filter(t => t.status !== 'concluida');
-  const finishedTasks = tasks.filter(t => t.status === 'concluida');
-  const highPriorityTasks = tasks.filter(t => t.status !== 'concluida' && (t.prioridade === 'alta' || t.prioridade === 'critica'));
+    const now = new Date();
+    const next48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+    const upcoming = tasks.filter(t => {
+      if (!t.prazo || t.status === 'concluida') return false;
+      const deadline = t.prazo.toDate ? t.prazo.toDate() : new Date(t.prazo.seconds * 1000);
+      return deadline <= next48h && deadline >= now;
+    });
 
-  const now = new Date();
-  const next48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-  const upcomingTasks = tasks.filter(t => {
-    if (!t.prazo || t.status === 'concluida') return false;
-    const deadline = t.prazo.toDate ? t.prazo.toDate() : new Date(t.prazo.seconds * 1000);
-    return deadline <= next48h && deadline >= now;
-  });
+    const rate = tasks.length > 0 ? Math.round((finished.length / tasks.length) * 100) : 0;
 
-  const completionRate = tasks.length > 0 ? Math.round((finishedTasks.length / tasks.length) * 100) : 0;
+    return {
+      activeTasks: active,
+      finishedTasks: finished,
+      highPriorityTasks: high,
+      upcomingTasks: upcoming,
+      completionRate: rate
+    };
+  }, [tasks]);
 
   if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400 text-sm font-medium">Carregando ZenTask...</div>;
   if (!user) return <Login />;
 
-  // Grouping Logic
-  const groupedTasks = filteredTasks.reduce((acc, t) => {
-    const key = t.status === 'concluida' ? 'finalizada' : (t.tipo || 'tarefa');
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(t);
-    return acc;
-  }, {} as Record<string, Task[]>);
+  // Grouping Logic - useMemo for Performance
+  const groupedTasks = useMemo(() => {
+    return filteredTasks.reduce((acc, t) => {
+      const key = t.status === 'concluida' ? 'finalizada' : (t.tipo || 'tarefa');
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(t);
+      return acc;
+    }, {} as Record<string, Task[]>);
+  }, [filteredTasks]);
 
   if (sharedTaskId) {
     return <SharedTaskLanding taskId={sharedTaskId} />;
