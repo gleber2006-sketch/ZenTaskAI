@@ -325,26 +325,31 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
           <div className={`w-2.5 h-2.5 rounded-full ${priorityColors[task.prioridade]} shadow-sm ring-1 ring-white dark:ring-slate-900`} title={`Prioridade: ${task.prioridade}`} />
 
           {/* Value (Legacy/Finance/Work) */}
-          {task.value && (
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-sm transition-all duration-300 ${task.fluxo === 'entrada'
-              ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50'
-              : task.fluxo === 'saida'
-                ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800/50'
-                : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50'
-              }`}>
-              {task.fluxo && (
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {task.fluxo === 'entrada' ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M20 12H4" />
-                  )}
-                </svg>
-              )}
-              <span className="text-[9px] font-black opacity-60">R$</span>
-              <span className="text-xs font-black tracking-tight">{task.value}</span>
-            </div>
-          )}
+          {/* Value (Legacy/Finance/Work) */}
+          {(() => {
+            const val = parseFloat(String(task.value || '').replace(',', '.'));
+            if (!task.value || isNaN(val) || val <= 0) return null;
+            return (
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-sm transition-all duration-300 ${task.fluxo === 'entrada'
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50'
+                : task.fluxo === 'saida'
+                  ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800/50'
+                  : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50'
+                }`}>
+                {task.fluxo && (
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {task.fluxo === 'entrada' ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M20 12H4" />
+                    )}
+                  </svg>
+                )}
+                <span className="text-[9px] font-black opacity-60">R$</span>
+                <span className="text-xs font-black tracking-tight">{task.value}</span>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Expand Indicator (The "Button" Cue) */}

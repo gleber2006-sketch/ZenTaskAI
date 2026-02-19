@@ -11,7 +11,11 @@ interface FinancialViewProps {
 const FinancialView: React.FC<FinancialViewProps> = ({ tasks, categories, dateRange }) => {
     // Filtrar apenas tarefas com valor financeiro e fluxo definido
     const transactions = tasks
-        .filter(t => t.value && t.fluxo)
+        .filter(t => {
+            if (!t.value || !t.fluxo) return false;
+            const val = parseFloat(String(t.value).replace(',', '.'));
+            return !isNaN(val) && val > 0;
+        })
         .sort((a, b) => {
             const dateA = (a.criada_em as any)?.seconds || 0;
             const dateB = (b.criada_em as any)?.seconds || 0;
@@ -97,7 +101,10 @@ const FinancialView: React.FC<FinancialViewProps> = ({ tasks, categories, dateRa
                                     </div>
                                     <div className="text-right ml-4 shrink-0">
                                         <span className={`text-sm font-black tracking-tight ${task.fluxo === 'entrada' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                            {task.fluxo === 'entrada' ? '+' : '-'} R$ {parseFloat(String(task.value || '0').replace(',', '.')).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                            {task.fluxo === 'entrada' ? '+' : '-'} R$ {(() => {
+                                                const val = parseFloat(String(task.value).replace(',', '.'));
+                                                return isNaN(val) ? '0,00' : val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                                            })()}
                                         </span>
                                     </div>
                                 </div>
