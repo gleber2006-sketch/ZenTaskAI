@@ -118,15 +118,18 @@ export const createTask = async (userId: string, data: Partial<Task>) => {
         userId,
         titulo: data.titulo || 'Nova Tarefa',
         descricao: data.descricao || '',
-        categoria_id: data.categoria_id || '', // Must be provided ideally
+        categoria_id: data.categoria_id || '',
         subcategoria_id: data.subcategoria_id || null,
         prioridade: data.prioridade || 'media',
-        status: 'pendente',
+        status: data.status || 'pendente',
         tipo: data.tipo || 'tarefa',
         prazo: data.prazo || null,
         data_inicio: data.data_inicio || null,
         recorrencia: data.recorrencia || null,
         ordem: data.ordem || 0,
+        value: data.value || null,
+        fluxo: data.fluxo || null,
+        metadata: data.metadata || null,
         criada_em: Timestamp.now(),
         atualizada_em: Timestamp.now()
     };
@@ -269,15 +272,16 @@ export const createTasksBulk = async (userId: string, taskDataList: CreatedTaskD
             categoria_id,
             subcategoria_id,
             prioridade: (data.importance as any) || 'media',
-            status: 'pendente',
+            status: data.status || 'pendente',
             tipo: data.tipo || 'tarefa',
             prazo: data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null,
             ordem: 0,
             criada_em: Timestamp.now(),
             atualizada_em: Timestamp.now(),
             metadata: Object.keys(metadata).length > 0 ? metadata : null,
-            // Map legacy fields
+            // Map legacy and finance fields
             value: data.value || null,
+            fluxo: data.fluxo || null
         });
     }
 

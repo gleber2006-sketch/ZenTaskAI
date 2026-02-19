@@ -155,6 +155,7 @@ export interface CreatedTaskData {
   stack?: string;
   repo?: string;
   sprint?: string;
+  status?: TaskStatus;
 }
 
 export interface AIResponse {

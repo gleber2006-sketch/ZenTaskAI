@@ -261,7 +261,18 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                                 className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
                                 placeholder="O que precisa ser feito?"
                                 value={titulo}
-                                onChange={e => setTitulo(e.target.value)}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    setTitulo(val);
+
+                                    // Auto-detection of Fluxo based on title
+                                    const lower = val.toLowerCase();
+                                    if (lower.includes('pagar') || lower.includes('compra') || lower.includes('gasto') || lower.includes('despesa')) {
+                                        setFluxo('saida');
+                                    } else if (lower.includes('receber') || lower.includes('venda') || lower.includes('ganho') || lower.includes('entrada')) {
+                                        setFluxo('entrada');
+                                    }
+                                }}
                             />
                         </div>
 
@@ -301,7 +312,21 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                                 <select
                                     className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 px-5 text-sm font-black outline-none dark:text-white focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                                     value={subcategoriaId}
-                                    onChange={e => setSubcategoriaId(e.target.value)}
+                                    onChange={e => {
+                                        const subId = e.target.value;
+                                        setSubcategoriaId(subId);
+
+                                        // Auto-detection of Fluxo based on subcategory name
+                                        const sub = subcategories.find(s => s.id === subId);
+                                        if (sub) {
+                                            const lower = sub.nome.toLowerCase();
+                                            if (lower.includes('pagar') || lower.includes('compra') || lower.includes('despesa')) {
+                                                setFluxo('saida');
+                                            } else if (lower.includes('receber') || lower.includes('venda') || lower.includes('receita')) {
+                                                setFluxo('entrada');
+                                            }
+                                        }
+                                    }}
                                     disabled={!categoriaId || subcategories.length === 0}
                                 >
                                     <option value="">{subcategories.length === 0 ? 'Nenhuma disponível' : 'Nenhuma'}</option>
