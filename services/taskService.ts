@@ -316,14 +316,16 @@ export const migrateExistingTasksFinance = async (userId: string) => {
 
             const catName = category?.nome.toLowerCase() || '';
             const subName = subcategory?.nome.toLowerCase() || '';
+            const titleName = task.titulo.toLowerCase();
 
             let suggestedFluxo: 'entrada' | 'saida' | null = null;
 
-            // Lógica de Mapeamento Baseada em Nomes
-            if (subName.includes('receber')) suggestedFluxo = 'entrada';
-            else if (catName === 'comercial') suggestedFluxo = 'entrada';
-            else if (subName.includes('pagar')) suggestedFluxo = 'saida';
-            else if (subName.includes('compra')) suggestedFluxo = 'saida';
+            // Lógica de Mapeamento Baseada em Nomes e Títulos
+            if (subName.includes('receber') || subName.includes('receita') || subName.includes('venda')) suggestedFluxo = 'entrada';
+            else if (titleName.includes('venda') || titleName.includes('receber') || titleName.includes('receita')) suggestedFluxo = 'entrada';
+            else if (catName === 'comercial' || catName === 'clientes') suggestedFluxo = 'entrada';
+            else if (subName.includes('pagar') || subName.includes('compra') || subName.includes('despesa')) suggestedFluxo = 'saida';
+            else if (titleName.includes('pagar') || titleName.includes('compra') || titleName.includes('despesa')) suggestedFluxo = 'saida';
             else if (catName === 'trabalho') suggestedFluxo = 'entrada';
 
             if (suggestedFluxo) {

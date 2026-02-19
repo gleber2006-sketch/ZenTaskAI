@@ -107,10 +107,10 @@ const App: React.FC = () => {
       setCategories(cats);
       console.log('✅ Categorias carregadas com sucesso.');
 
-      // Migração Financeira Retroativa (v1.4.1)
-      const migrationRun = localStorage.getItem(`zen_finance_migrated_${uid}`);
+      // Migração Financeira Retroativa (v1.4.2 - Reforçada)
+      const migrationRun = localStorage.getItem(`zen_finance_migrated_v142_${uid}`);
       if (!migrationRun) {
-        console.log('🏗️ Detectada necessidade de migração financeira. Iniciando...');
+        console.log('🏗️ Detectada necessidade de migração financeira (v1.4.2). Iniciando...');
         const count = await migrateExistingTasksFinance(uid);
         if (count > 0) {
           toast.success(`📊 ${count} tarefas foram atualizadas com o novo fluxo financeiro!`, {
@@ -118,7 +118,7 @@ const App: React.FC = () => {
             duration: 6000
           });
         }
-        localStorage.setItem(`zen_finance_migrated_${uid}`, 'true');
+        localStorage.setItem(`zen_finance_migrated_v142_${uid}`, 'true');
       }
     } catch (error) {
       console.error("Erro ao carregar categorias:", error);
