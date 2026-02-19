@@ -19,6 +19,7 @@ import BoardView from './components/BoardView';
 import CommandBar from './components/CommandBar';
 import FilterModal from './components/FilterModal';
 import DashboardView from './components/DashboardView';
+import FinancialView from './components/FinancialView';
 import { Toaster, toast } from 'sonner';
 
 const App: React.FC = () => {
@@ -48,7 +49,8 @@ const App: React.FC = () => {
   const [customDate, setCustomDate] = useState('');
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
-  const [navMode, setNavMode] = useState<'tasks' | 'dashboard'>('tasks');
+  const [navMode, setNavMode] = useState<'tasks' | 'dashboard' | 'finance'>('tasks');
+  const [dateRange, setDateRange] = useState<'1w' | '2w' | '15d' | '1m' | '3m' | 'all' | 'custom'>('1m');
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -434,6 +436,44 @@ const App: React.FC = () => {
     };
   }, [tasks]);
 
+  // Financial Metrics - useMemo with Date Filtering
+  const financialMetrics = useMemo(() => {
+    const now = new Date();
+    let startDate: Date | null = null;
+
+    if (dateRange === '1w') startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    else if (dateRange === '2w') startDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    else if (dateRange === '15d') startDate = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
+    else if (dateRange === '1m') startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    else if (dateRange === '3m') startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    else if (dateRange === 'custom' && customDate) startDate = new Date(customDate + 'T00:00:00');
+
+    const tasksInPeriod = tasks.filter(t => {
+      if (!startDate) return true;
+      const createdDate = (t.criada_em as any)?.toDate ? (t.criada_em as any).toDate() : new Date((t.criada_em as any)?.seconds * 1000 || Date.now());
+      return createdDate >= startDate;
+    });
+
+    let entries = 0;
+    let exits = 0;
+
+    tasksInPeriod.forEach(t => {
+      const val = parseFloat(String(t.value || '0').replace(',', '.'));
+      if (isNaN(val)) return;
+
+      if (t.fluxo === 'entrada') entries += val;
+      else if (t.fluxo === 'saida') exits += val;
+    });
+
+    return {
+      totalEntradas: entries,
+      totalSaidas: exits,
+      saldo: entries - exits,
+      tasksInPeriodCount: tasksInPeriod.length,
+      finishedInPeriodCount: tasksInPeriod.filter(t => t.status === 'concluida').length
+    };
+  }, [tasks, dateRange, customDate]);
+
   // Grouping Logic - useMemo for Performance
   const groupedTasks = useMemo(() => {
     return filteredTasks.reduce((acc, t) => {
@@ -547,6 +587,17 @@ const App: React.FC = () => {
                 completionRate={completionRate}
                 highPriorityCount={highPriorityTasks.length}
                 upcomingCount={upcomingTasks.length}
+                dateRange={dateRange}
+                setDateRange={setDateRange}
+                financialMetrics={financialMetrics}
+                customDate={customDate}
+                setCustomDate={setCustomDate}
+              />
+            ) : navMode === 'finance' ? (
+              <FinancialView
+                tasks={tasks}
+                categories={categories}
+                dateRange={dateRange}
               />
             ) : (
               <>

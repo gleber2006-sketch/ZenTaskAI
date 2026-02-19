@@ -99,6 +99,7 @@ export interface Task {
   // Optional legacy fields mapping (kept loose for transition safety if needed, but discouraged)
   client?: string;
   value?: string;
+  fluxo?: 'entrada' | 'saida' | null;
   pagamento?: PaymentData;
 }
 
@@ -143,7 +144,7 @@ export interface CreatedTaskData {
   briefing?: string;
   linkArquivos?: string;
   prazoAprovação?: string;
-  fluxo?: 'Entrada' | 'Saída';
+  fluxo?: 'entrada' | 'saida' | null;
   tipoFinanceiro?: 'Fixo' | 'Variável';
   comprovante?: string;
   materia?: string;

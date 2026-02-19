@@ -27,6 +27,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
     const [hora, setHora] = useState('');
     const [recorrencia, setRecorrencia] = useState('');
     const [value, setValue] = useState('');
+    const [fluxo, setFluxo] = useState<'entrada' | 'saida' | null>(null);
     const [metadata, setMetadata] = useState<Record<string, any>>({});
 
     // Data State
@@ -44,6 +45,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
             setStatus(existingTask.status);
             setTipo(existingTask.tipo);
             setValue(existingTask.value || '');
+            setFluxo(existingTask.fluxo || null);
             setRecorrencia(existingTask.recorrencia || '');
             setMetadata(existingTask.metadata || {});
 
@@ -209,6 +211,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                 status,
                 tipo,
                 value: value || null,
+                fluxo: fluxo || null,
                 recorrencia: recorrencia || null,
                 metadata: Object.keys(metadata).length > 0 ? metadata : null,
                 prazo: prazo ? (() => {
@@ -409,6 +412,31 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                                         value={value}
                                         onChange={e => setValue(e.target.value)}
                                     />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Fluxo Selector (Entrada/Saída) */}
+                        {categoriaId && (
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-500">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 mb-2">Tipo de Fluxo Financeiro</label>
+                                <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-100 dark:bg-slate-950 rounded-[1.25rem] border border-slate-200 dark:border-slate-800/80">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFluxo(fluxo === 'entrada' ? null : 'entrada')}
+                                        className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${fluxo === 'entrada' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-emerald-500 hover:bg-white dark:hover:bg-slate-900'}`}
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+                                        Entrada
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFluxo(fluxo === 'saida' ? null : 'saida')}
+                                        className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${fluxo === 'saida' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20 scale-[1.02]' : 'bg-transparent text-slate-400 hover:text-rose-500 hover:bg-white dark:hover:bg-slate-900'}`}
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M20 12H4" /></svg>
+                                        Saída
+                                    </button>
                                 </div>
                             </div>
                         )}

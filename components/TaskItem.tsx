@@ -326,7 +326,21 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
 
           {/* Value (Legacy/Finance/Work) */}
           {task.value && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-sm transition-all duration-300 ${task.fluxo === 'entrada'
+              ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50'
+              : task.fluxo === 'saida'
+                ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800/50'
+                : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50'
+              }`}>
+              {task.fluxo && (
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {task.fluxo === 'entrada' ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M20 12H4" />
+                  )}
+                </svg>
+              )}
               <span className="text-[9px] font-black opacity-60">R$</span>
               <span className="text-xs font-black tracking-tight">{task.value}</span>
             </div>

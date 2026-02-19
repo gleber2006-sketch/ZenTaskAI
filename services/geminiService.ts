@@ -71,7 +71,7 @@ export const processTaskCommand = async (
    - Trabalho: title, contato, empresa, tarefa, value, payment.
    - Pessoal: local, humor, participantes, bemEstar.
    - Clientes: briefing, linkArquivos, prazoAprovação.
-   - Financeiro: fluxo ('Entrada'|'Saída'), tipoFinanceiro ('Fixo'|'Variável'), comprovante.
+   - Financeiro: fluxo ('entrada'|'saida'), tipoFinanceiro ('Fixo'|'Variável'), comprovante.
    - Estudos: materia, topico, linkAula, dataRevisao.
    - Projetos: milestone, stack, repo, sprint.
 3. Subcategorize (subcategory field):
@@ -170,7 +170,7 @@ IMPORTANT: Bulk actions:
                       briefing: { type: Type.STRING },
                       linkArquivos: { type: Type.STRING },
                       prazoAprovação: { type: Type.STRING },
-                      fluxo: { type: Type.STRING, enum: ['Entrada', 'Saída'] },
+                      fluxo: { type: Type.STRING, enum: ['entrada', 'saida'] },
                       tipoFinanceiro: { type: Type.STRING, enum: ['Fixo', 'Variável'] },
                       comprovante: { type: Type.STRING },
                       materia: { type: Type.STRING },
