@@ -427,9 +427,10 @@ const App: React.FC = () => {
 
   // Dashboard Metrics - useMemo for Performance
   const { activeTasks, finishedTasks, highPriorityTasks, upcomingTasks, completionRate } = useMemo(() => {
-    const active = tasks.filter(t => t.status !== 'concluida');
-    const finished = tasks.filter(t => t.status === 'concluida');
-    const high = tasks.filter(t => t.status !== 'concluida' && (t.prioridade === 'alta' || t.prioridade === 'critica'));
+    const financialTasks = tasks.filter(t => t.value);
+    const active = financialTasks.filter(t => t.status !== 'concluida');
+    const finished = financialTasks.filter(t => t.status === 'concluida');
+    const high = financialTasks.filter(t => t.status !== 'concluida' && (t.prioridade === 'alta' || t.prioridade === 'critica'));
 
     const now = new Date();
     const next48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
@@ -439,7 +440,7 @@ const App: React.FC = () => {
       return deadline <= next48h && deadline >= now;
     });
 
-    const rate = tasks.length > 0 ? Math.round((finished.length / tasks.length) * 100) : 0;
+    const rate = financialTasks.length > 0 ? Math.round((finished.length / financialTasks.length) * 100) : 0;
 
     return {
       activeTasks: active,
@@ -463,6 +464,7 @@ const App: React.FC = () => {
     else if (dateRange === 'custom' && customDate) startDate = new Date(customDate + 'T00:00:00');
 
     const tasksInPeriod = tasks.filter(t => {
+      if (!t.value) return false; // Ignorar tarefas sem valor no dashboard financeiro
       if (!startDate) return true;
       const createdDate = (t.criada_em as any)?.toDate ? (t.criada_em as any).toDate() : new Date((t.criada_em as any)?.seconds * 1000 || Date.now());
       return createdDate >= startDate;

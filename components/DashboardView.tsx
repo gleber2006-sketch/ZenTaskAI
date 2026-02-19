@@ -61,11 +61,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             icon: 'M20 12H4'
         },
         {
-            label: 'Saldo Líquido',
+            label: 'Resultado',
             realizado: `R$ ${financialMetrics.realizado.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
             projetado: `R$ ${financialMetrics.projetado.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
             color: financialMetrics.realizado.saldo >= 0 ? 'text-indigo-500' : 'text-rose-600',
-            icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z'
+            icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.67 1M12 17c-1.12 0-2.1-.425-2.69-1.041M12 7V5m0 14v-2'
         }
     ];
 
@@ -178,8 +178,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
                 <div className="mt-12 p-6 bg-slate-50 dark:bg-slate-900/40 rounded-3xl border border-slate-200 dark:border-slate-800/50">
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                        No período selecionado ({dateRange.toUpperCase()}), você registrou um balanço de <span className={`font-black ${financialMetrics.saldo >= 0 ? 'text-emerald-500' : 'text-rose-600'}`}>R$ {financialMetrics.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>.
-                        Continue acompanhando seus fluxos para uma melhor saúde financeira.
+                        No período selecionado ({dateRange.toUpperCase()}), você registrou um **Resultado Realizado** de <span className={`font-black ${financialMetrics.realizado.saldo >= 0 ? 'text-emerald-500' : 'text-rose-600'}`}>R$ {financialMetrics.realizado.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>.
+                        A projeção para o fechamento (se todas as missões forem concluídas) é de <span className={`font-black ${financialMetrics.saldo >= 0 ? 'text-indigo-500' : 'text-rose-600'}`}>R$ {financialMetrics.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>.
                     </p>
                 </div>
             </div>
