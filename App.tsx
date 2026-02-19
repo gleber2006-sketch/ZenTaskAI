@@ -468,21 +468,40 @@ const App: React.FC = () => {
       return createdDate >= startDate;
     });
 
-    let entries = 0;
-    let exits = 0;
+    let entriesRealizado = 0;
+    let exitsRealizado = 0;
+    let entriesProjetado = 0;
+    let exitsProjetado = 0;
 
     tasksInPeriod.forEach(t => {
       const val = parseFloat(String(t.value || '0').replace(',', '.'));
       if (isNaN(val)) return;
 
-      if (t.fluxo === 'entrada') entries += val;
-      else if (t.fluxo === 'saida') exits += val;
+      const isConcluida = t.status === 'concluida';
+
+      if (t.fluxo === 'entrada') {
+        if (isConcluida) entriesRealizado += val;
+        else entriesProjetado += val;
+      } else if (t.fluxo === 'saida') {
+        if (isConcluida) exitsRealizado += val;
+        else exitsProjetado += val;
+      }
     });
 
     return {
-      totalEntradas: entries,
-      totalSaidas: exits,
-      saldo: entries - exits,
+      totalEntradas: entriesRealizado + entriesProjetado,
+      totalSaidas: exitsRealizado + exitsProjetado,
+      realizado: {
+        entradas: entriesRealizado,
+        saidas: exitsRealizado,
+        saldo: entriesRealizado - exitsRealizado
+      },
+      projetado: {
+        entradas: entriesProjetado,
+        saidas: exitsProjetado,
+        saldo: entriesProjetado - exitsProjetado
+      },
+      saldo: (entriesRealizado + entriesProjetado) - (exitsRealizado + exitsProjetado),
       tasksInPeriodCount: tasksInPeriod.length,
       finishedInPeriodCount: tasksInPeriod.filter(t => t.status === 'concluida').length
     };

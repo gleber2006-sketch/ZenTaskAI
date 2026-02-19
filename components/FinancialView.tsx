@@ -83,6 +83,12 @@ const FinancialView: React.FC<FinancialViewProps> = ({ tasks, categories, dateRa
                                                     {cat?.nome || 'Sem Categoria'}
                                                 </span>
                                                 <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                                <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${task.status === 'concluida'
+                                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                                                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'}`}>
+                                                    {task.status === 'concluida' ? 'Realizado' : 'Projetado'}
+                                                </span>
+                                                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                                                 <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
                                                     {(task.criada_em as any)?.toDate?.()?.toLocaleDateString() || 'Recent'}
                                                 </span>

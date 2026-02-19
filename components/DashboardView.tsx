@@ -46,9 +46,27 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     ];
 
     const financeStats = [
-        { label: 'Entradas', value: `R$ ${financialMetrics.totalEntradas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: 'text-emerald-500', icon: 'M12 4v16m8-8H4' },
-        { label: 'Saídas', value: `R$ ${financialMetrics.totalSaidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: 'text-rose-500', icon: 'M20 12H4' },
-        { label: 'Saldo Líquido', value: `R$ ${financialMetrics.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: financialMetrics.saldo >= 0 ? 'text-indigo-500' : 'text-rose-600', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' }
+        {
+            label: 'Entradas',
+            realizado: `R$ ${financialMetrics.realizado.entradas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            projetado: `R$ ${financialMetrics.projetado.entradas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            color: 'text-emerald-500',
+            icon: 'M12 4v16m8-8H4'
+        },
+        {
+            label: 'Saídas',
+            realizado: `R$ ${financialMetrics.realizado.saidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            projetado: `R$ ${financialMetrics.projetado.saidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            color: 'text-rose-500',
+            icon: 'M20 12H4'
+        },
+        {
+            label: 'Saldo Líquido',
+            realizado: `R$ ${financialMetrics.realizado.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            projetado: `R$ ${financialMetrics.projetado.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            color: financialMetrics.realizado.saldo >= 0 ? 'text-indigo-500' : 'text-rose-600',
+            icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z'
+        }
     ];
 
     const datePeriods = [
@@ -119,9 +137,20 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                             <div className={`w-2 h-2 rounded-full ${stat.color.replace('text-', 'bg-')}`}></div>
                             <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{stat.label}</p>
                         </div>
-                        <p className={`text-2xl font-black tracking-tighter ${stat.color}`}>
-                            {stat.value}
-                        </p>
+                        <div className="space-y-1">
+                            <div>
+                                <p className={`text-2xl font-black tracking-tighter ${stat.color}`}>
+                                    {stat.realizado}
+                                </p>
+                                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">Realizado</p>
+                            </div>
+                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                                <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                                    {stat.projetado}
+                                </p>
+                                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">Projetado (Pendente)</p>
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>
