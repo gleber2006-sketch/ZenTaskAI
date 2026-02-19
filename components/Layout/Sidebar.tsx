@@ -62,13 +62,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </button>
 
                 <button
-                    onClick={() => setNavMode('dashboard')}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-all border ${navMode === 'dashboard' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800 border-transparent'}`}
-                >
-                    <svg className={`w-5 h-5 ${navMode === 'dashboard' ? 'text-white' : 'text-indigo-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                    Dashboard
-                </button>
-                <button
                     onClick={() => setNavMode('tasks')}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-all border ${navMode === 'tasks' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800 border-transparent'}`}
                 >
@@ -81,6 +74,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 >
                     <svg className={`w-5 h-5 ${navMode === 'finance' ? 'text-white' : 'text-emerald-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.67 1M12 17c-1.12 0-2.1-.425-2.69-1.041M12 7V5m0 14v-2" /></svg>
                     Financeiro
+                </button>
+                <button
+                    onClick={() => setNavMode('dashboard')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-all border ${navMode === 'dashboard' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/20' : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800 border-transparent'}`}
+                >
+                    <svg className={`w-5 h-5 ${navMode === 'dashboard' ? 'text-white' : 'text-indigo-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    Dashboard
                 </button>
                 <button onClick={() => setShowCategoryManager(true)} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-xl transition-colors">
                     <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
