@@ -397,16 +397,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ userId, onClose, onSuccess, existin
                         )}
 
                         {/* Extra: Value (Legacy/Finance) */}
-                        {categoriaId && categories.find(c => c.id === categoriaId)?.nome === 'Financeiro' && (
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Valor (R$)</label>
-                                <input
-                                    type="text"
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-md py-2 px-3 text-sm dark:text-white"
-                                    placeholder="0,00"
-                                    value={value}
-                                    onChange={e => setValue(e.target.value)}
-                                />
+                        {categoriaId && ['Financeiro', 'Trabalho', 'Comercial', 'Clientes'].includes(categories.find(c => c.id === categoriaId)?.nome || '') && (
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 mb-1.5">Valor do Negócio / Objetivo (R$)</label>
+                                <div className="relative group/value">
+                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm group-focus-within/value:text-indigo-500 transition-colors">R$</div>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800/80 rounded-2xl py-3.5 pl-12 pr-5 text-sm font-black focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white transition-all"
+                                        placeholder="0,00"
+                                        value={value}
+                                        onChange={e => setValue(e.target.value)}
+                                    />
+                                </div>
                             </div>
                         )}
 

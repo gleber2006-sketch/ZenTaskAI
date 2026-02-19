@@ -324,9 +324,12 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, categories, onEdit, onDelete,
           {/* Priority Badge */}
           <div className={`w-2.5 h-2.5 rounded-full ${priorityColors[task.prioridade]} shadow-sm ring-1 ring-white dark:ring-slate-900`} title={`Prioridade: ${task.prioridade}`} />
 
-          {/* Value (Legacy/Finance) */}
+          {/* Value (Legacy/Finance/Work) */}
           {task.value && (
-            <span className="text-xs font-mono text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 rounded">{task.value}</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+              <span className="text-[9px] font-black opacity-60">R$</span>
+              <span className="text-xs font-black tracking-tight">{task.value}</span>
+            </div>
           )}
         </div>
 

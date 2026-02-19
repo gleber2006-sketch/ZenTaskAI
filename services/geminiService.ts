@@ -90,6 +90,9 @@ IMPORTANT: YOUR PERSONA IN 'message' FIELD:
 - If the task is work/productivity related, provide a brief productivity tip (e.g., "Tarefa de alta prioridade. Sugiro usar a técnica Pomodoro.").
 - Be concise.
 5. Confirm quantity and category in chat.
+6. **IMPORTANT - SHOPPING LISTS / CHECKLISTS**: If the user asks to create a list of items (e.g., "comprar pão, leite, café" or "fazer lista de compras"), you MUST create **ONLY ONE** task with a title like "Lista de Compras" or similar. Format all items as a Markdown checklist in the 'description' field using the exact format: '- [ ] Item Name'.
+    - Force subcategory to 'Compras' if it's a shopping list.
+    - Do NOT create multiple tasks for list items.
 Context: ${taskListContext}`;
 
   try {
