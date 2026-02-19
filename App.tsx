@@ -8,7 +8,7 @@ import TaskItem from './components/TaskItem';
 import CategoryManager from './components/CategoryManager';
 import TaskForm from './components/TaskForm';
 import { fetchCategories, forceResetCategories } from './services/categoryService';
-import { fetchTasks, deleteTask, deleteAllTasks, createTasksBulk, toggleTaskStatus, subscribeToTasks } from './services/taskService';
+import { fetchTasks, deleteTask, deleteAllTasks, createTasksBulk, toggleTaskStatus, subscribeToTasks, migrateExistingTasksFinance } from './services/taskService';
 import { processTaskCommand, FilePart } from './services/geminiService';
 import { ActionType, AIResponse } from './types';
 import CurrentFocus from './components/CurrentFocus';
@@ -106,6 +106,20 @@ const App: React.FC = () => {
       const cats = await fetchCategories(uid);
       setCategories(cats);
       console.log('✅ Categorias carregadas com sucesso.');
+
+      // Migração Financeira Retroativa (v1.4.1)
+      const migrationRun = localStorage.getItem(`zen_finance_migrated_${uid}`);
+      if (!migrationRun) {
+        console.log('🏗️ Detectada necessidade de migração financeira. Iniciando...');
+        const count = await migrateExistingTasksFinance(uid);
+        if (count > 0) {
+          toast.success(`📊 ${count} tarefas foram atualizadas com o novo fluxo financeiro!`, {
+            description: 'Seu histórico agora está refletido no Dashboard.',
+            duration: 6000
+          });
+        }
+        localStorage.setItem(`zen_finance_migrated_${uid}`, 'true');
+      }
     } catch (error) {
       console.error("Erro ao carregar categorias:", error);
     } finally {

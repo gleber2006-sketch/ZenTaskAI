@@ -283,3 +283,63 @@ export const createTasksBulk = async (userId: string, taskDataList: CreatedTaskD
 
     await batch.commit();
 };
+
+export const migrateExistingTasksFinance = async (userId: string) => {
+    console.log('🚀 Iniciando migração financeira retroativa...');
+
+    // 1. Carregar categorias e tarefas
+    const catsTask = fetchCategories(userId);
+    const tasksTask = fetchTasks(userId);
+
+    const [categories, tasks] = await Promise.all([catsTask, tasksTask]);
+
+    // Mapear subcategorias para cada categoria encontrada nas tarefas
+    const subcatsMap: Record<string, any[]> = {};
+    const categoriesInTasks = Array.from(new Set(tasks.map(t => t.categoria_id)));
+
+    for (const catId of categoriesInTasks) {
+        if (catId) subcatsMap[catId] = await fetchSubcategories(catId);
+    }
+
+    const batch = writeBatch(db);
+    let count = 0;
+
+    for (const task of tasks) {
+        // Regra: Somente se tiver valor e não tiver fluxo definido (Blindagem)
+        if (task.value && !task.fluxo) {
+            const category = categories.find(c => c.id === task.categoria_id);
+            const subcategory = task.subcategoria_id ? subcatsMap[task.categoria_id]?.find(s => s.id === task.subcategoria_id) : null;
+
+            const catName = category?.nome.toLowerCase() || '';
+            const subName = subcategory?.nome.toLowerCase() || '';
+
+            let suggestedFluxo: 'entrada' | 'saida' | null = null;
+
+            // Lógica de Mapeamento Baseada em Nomes
+            if (subName.includes('receber')) suggestedFluxo = 'entrada';
+            else if (catName === 'comercial') suggestedFluxo = 'entrada';
+            else if (subName.includes('pagar')) suggestedFluxo = 'saida';
+            else if (subName.includes('compra')) suggestedFluxo = 'saida';
+            else if (catName === 'trabalho') suggestedFluxo = 'entrada';
+
+            if (suggestedFluxo) {
+                const docRef = doc(db, COLLECTION_TASKS, task.id);
+                batch.update(docRef, {
+                    fluxo: suggestedFluxo,
+                    atualizada_em: Timestamp.now()
+                });
+                count++;
+            }
+        }
+    }
+
+    if (count > 0) {
+        await batch.commit();
+        console.log(`✅ Migração concluída: ${count} tarefas atualizadas.`);
+    } else {
+        console.log('ℹ️ Nenhuma tarefa precisava de migração.');
+    }
+
+    return count;
+};
+
